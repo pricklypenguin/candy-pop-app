@@ -1,12 +1,11 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { CAT_PALETTE, FORMS, FREQ, PERIOD_OPTS, obFresh, paidKey, seed, type FormKind, type Onboarding, type Persisted, type Tab } from './lib/data';
-import { HIST, TODAY, fromIso, isoOf, ord } from './lib/dates';
+import { CAT_PALETTE, FORMS, FREQ, PERIOD_OPTS, emptyLists, obFresh, paidKey, seed, type FormKind, type Onboarding, type Persisted, type Tab } from './lib/data';
+import { TODAY, fromIso, isoOf, ord } from './lib/dates';
 import { curOf, fmtWith } from './lib/money';
 import { catsOf, leftFor, nextPayOf, period } from './lib/model';
+import * as storage from './lib/storage';
+import { DATA_FIELDS, PREF_FIELDS } from './lib/storage';
 import { DEFAULT_BG, DEFAULT_FONT, applyTheme, resolveDark, type ThemePref } from './lib/theme';
-
-const KEY = 'steady.candypop.v1';
-const SEED_VER = 1;
 
 export type Sheet =
   | { mode: 'spend' }
@@ -19,7 +18,7 @@ export type Sheet =
 export interface Calc { name: string; target: string; start: string; mode: 'pay' | 'time'; monthly: number; months: number }
 export const CALC_DEFAULT: Calc = { name: '', target: '2000', start: '0', mode: 'pay', monthly: 100, months: 12 };
 
-interface Prefs { tab: Tab; view: 'web' | 'mobile'; theme: ThemePref; uiFont: string; uiBg: string; seedVer: number }
+interface Prefs { tab: Tab; view: 'web' | 'mobile'; theme: ThemePref; uiFont: string; uiBg: string }
 interface Transient {
   ob: Onboarding | null; sheet: Sheet | null; entry: string; note: string; selCat: string;
   toast: { title: string; sub: string } | null; showBreakdown: boolean; openCat: string | null;
@@ -29,8 +28,6 @@ interface Transient {
 }
 export type State = Persisted & Prefs & Transient;
 
-const PERSIST: (keyof Persisted | keyof Prefs)[] = ['seedVer', 'theme', 'uiFont', 'uiBg', 'currency', 'onboarded', 'cats', 'tab', 'view', 'incomes', 'incomeTxns', 'budgets', 'bills', 'paidKeys', 'debts', 'goals', 'txns', 'periodType', 'customStart', 'customLen', 'excluded', 'chartMode', 'catView', 'debtStrategy', 'debtExtra', 'showHowDebt', 'startedAt'];
-
 export const RECENT_PAGE = 8;
 
 const TRANSIENT: Omit<Transient, 'ob'> = {
@@ -38,38 +35,65 @@ const TRANSIENT: Omit<Transient, 'ob'> = {
   form: {}, offset: 0, logType: 'spend', confirmReset: false, confirmRemove: false, confirmCat: null, newCatName: '', calc: null, recentShown: RECENT_PAGE
 };
 
-function load(): State {
-  let saved: Partial<State> | null = null;
-  try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* private mode etc. */ }
-  if (saved && saved.seedVer !== SEED_VER) saved = null;
-  const prefs: Prefs = { tab: 'home', view: 'web', theme: 'light', uiFont: DEFAULT_FONT, uiBg: DEFAULT_BG, seedVer: SEED_VER };
-  // Data saved before startedAt existed: start from the earliest logged entry.
-  if (saved && saved.startedAt == null) {
-    const days = [...(saved.txns || []), ...(saved.incomeTxns || [])].map(t => t.d);
-    saved.startedAt = Math.max(HIST, Math.min(TODAY, ...days));
-  }
-  const base = Object.assign(prefs, seed(), saved || {}, { seedVer: SEED_VER });
-  return { ...base, ...TRANSIENT, ob: base.onboarded ? null : obFresh() };
+const PREF_DEFAULTS: Prefs = { tab: 'home', view: 'web', theme: 'light', uiFont: DEFAULT_FONT, uiBg: DEFAULT_BG };
+
+/** Initial state: saved data if there is any (missing lists default to empty), otherwise the sample budget. */
+function load(): { state: State; notice?: [string, string]; hadData: boolean; hadPrefs: boolean } {
+  const l = storage.load();
+  const base = { ...PREF_DEFAULTS, ...seed(), ...(l.data ? emptyLists() : null), ...l.prefs, ...l.data } as Persisted & Prefs;
+  return { state: { ...base, ...TRANSIENT, ob: base.onboarded ? null : obFresh() }, notice: l.notice, hadData: !!l.data, hadPrefs: !!l.prefs };
 }
+
+type Fields = Record<string, unknown>;
+const pickFields = (src: object, fields: readonly string[]) => { const o: Fields = {}; fields.forEach(k => o[k] = (src as Fields)[k]); return o; };
+const changed = (s: object, last: Fields, fields: readonly string[]) => fields.some(k => (s as Fields)[k] !== last[k]);
 
 type Patch = Partial<State> | ((s: State) => Partial<State> | null);
 
 function useAppState() {
-  const [s, setS] = useState<State>(load);
+  const [initial] = useState(load);
+  const [s, setS] = useState<State>(initial.state);
   const [, force] = useState(0);
   const toastTimer = useRef<number | undefined>(undefined);
+  // What was last written (or loaded), so only real changes are saved.
+  const lastSaved = useRef<{ data: Fields; prefs: Fields }>({
+    data: initial.hadData ? pickFields(initial.state, DATA_FIELDS) : {},
+    prefs: initial.hadPrefs ? pickFields(initial.state, PREF_FIELDS) : {}
+  });
 
   const set = useCallback((p: Patch) => setS(prev => {
     const u = typeof p === 'function' ? p(prev) : p;
     return u ? { ...prev, ...u } : prev;
   }), []);
 
-  // Persist everything except transient UI state.
+  /** Replace the budget data with a newer copy (from another tab), keeping what's on screen. */
+  const applyExternal = useCallback((data: Fields) => {
+    const full = { ...emptyLists(), ...data } as Partial<State>;
+    lastSaved.current.data = pickFields(full, DATA_FIELDS);
+    set(x => ({ ...full, ob: full.onboarded ? null : x.ob }));
+  }, [set]);
+
+  // Save budget data and device prefs when they change. Transient UI state is never saved.
   useEffect(() => {
-    const keep: Record<string, unknown> = {};
-    PERSIST.forEach(k => keep[k] = s[k]);
-    try { localStorage.setItem(KEY, JSON.stringify(keep)); } catch { /* ignore */ }
-  }, [s]);
+    const last = lastSaved.current;
+    if (changed(s, last.data, DATA_FIELDS)) {
+      if (storage.saveData(s as unknown as Fields) === 'conflict') {
+        // Another tab saved first: load its version instead of overwriting it.
+        const latest = storage.load().data;
+        if (latest) {
+          applyExternal(latest);
+          toast('Updated from another tab', 'Your last change here wasn’t saved. Please do it again.');
+          return;
+        }
+      }
+      last.data = pickFields(s, DATA_FIELDS);
+    }
+    if (changed(s, last.prefs, PREF_FIELDS)) { storage.savePrefs(s as unknown as Fields); last.prefs = pickFields(s, PREF_FIELDS); }
+  }, [s]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Pick up changes saved by the app in another tab.
+  useEffect(() => storage.watchOtherTabs(applyExternal), [applyExternal]);
+  useEffect(() => { if (initial.notice) toast(...initial.notice); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const dark = resolveDark(s.theme);
   useEffect(() => { applyTheme(dark, s.uiFont, s.uiBg); }, [dark, s.uiFont, s.uiBg]);

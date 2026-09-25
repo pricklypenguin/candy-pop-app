@@ -150,6 +150,8 @@ export function seed() {
   };
 }
 export type Persisted = ReturnType<typeof seed>;
+/** Defaults for lists missing from saved data: empty, never sample data. */
+export const emptyLists = () => ({ incomes: [], incomeTxns: [], bills: [], paidKeys: [], debts: [], goals: [], txns: [] } as Pick<Persisted, 'incomes' | 'incomeTxns' | 'bills' | 'paidKeys' | 'debts' | 'goals' | 'txns'>);
 
 // ---------- onboarding ----------
 export interface ObBill { id: string; name: string; amount: string; day: string }
