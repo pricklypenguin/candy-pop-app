@@ -6,7 +6,7 @@ import { H } from './ui';
 
 const roundBtn: CSSProperties = { width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'var(--surface)', fontSize: 18, fontWeight: 700, color: 'var(--ink)' };
 
-/** Budget period switcher shown at the top of every tab. The selected period applies app-wide. */
+/** Budget period switcher on Home. Only Home looks back at past periods; other tabs always show today. */
 export function PeriodBar() {
   const { s, set } = useApp();
   const P = period(s, s.offset), isPast = s.offset < 0;
@@ -29,15 +29,3 @@ export function PeriodBar() {
   );
 }
 
-/** Shown on tabs that don't keep history (Debt, Goals) while a past period is selected. */
-export function CurrentOnlyNotice({ what }: { what: string }) {
-  const { s, set } = useApp();
-  if (s.offset >= 0) return null;
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--surface)', border: '2px dashed var(--line3)', borderRadius: 22, padding: '12px 16px' }}>
-      <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent-soft)', color: 'var(--accent-ink)', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>i</span>
-      <span className="pretty" style={{ flex: 1, minWidth: 200, fontSize: 14 }}>You’re looking at a past period, but {what} always show today’s figures.</span>
-      <button className="btn-link" onClick={() => set({ offset: 0, openCat: null, recentShown: RECENT_PAGE })} style={{ padding: 0, fontSize: 14 }}>Back to now</button>
-    </div>
-  );
-}

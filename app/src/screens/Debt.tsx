@@ -1,14 +1,16 @@
 import { CUR_M, CUR_Y, monthLabel, spanTxt } from '../lib/dates';
 import { STRATS, simDebts } from '../lib/debt';
 import { monthly } from '../lib/model';
-import { CurrentOnlyNotice, PeriodBar } from '../PeriodBar';
+import { scaled } from '../lib/money';
 import { useApp } from '../store';
 import { Bar, H, RadioDot, Switch } from '../ui';
 
 const ORD = ['1st', '2nd', '3rd'];
 
 export function Debt() {
-  const { s, set, f, actions } = useApp();
+  const { s, set, f, cur, actions } = useApp();
+  // Extra-payment slider range sized for the currency: 0–1,000 in steps of 10 for $/£/€, 0–150,000 in steps of 2,000 for ¥.
+  const sliderMax = scaled(cur, 1000), sliderStep = scaled(cur, 10);
   const M = monthly(s);
   const strat = s.debtStrategy || 'avalanche', extra = s.debtExtra || 0;
   const plan = simDebts(s.debts, strat, extra), base = simDebts(s.debts, 'min', 0);
@@ -63,10 +65,8 @@ export function Debt() {
   const goPlan = () => { const el = document.getElementById('payoff-plan'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
-      <PeriodBar />
-      <H size={32} tight={2} style={{ paddingTop: 4 }}>Debt</H>
-      <CurrentOnlyNotice what="debt balances" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 28 }}>
+      <H size={32} tight={2}>Debt</H>
       {!hasDebts && (
         <div className="card" style={{ borderRadius: 38, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 560 }}>
           <H size={24}>No debts added</H>
@@ -186,8 +186,8 @@ export function Debt() {
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
               <div style={{ flex: '1 1 280px', display: 'flex', flexDirection: 'column', gap: 10, padding: '4px 0' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}><span style={{ fontSize: 15, fontWeight: 600 }}>Extra each month</span><H size={28}>{f(extra)}</H></div>
-                <input type="range" min={0} max={1000} step={10} value={extra} aria-label="Extra each month" onChange={e => set({ debtExtra: parseInt(e.target.value, 10) || 0 })} style={{ width: '100%', accentColor: 'var(--accent)', height: 24 }} />
-                <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}><span>{f(0)}</span><span>{f(500)}</span><span>{f(1000)}</span></div>
+                <input type="range" min={0} max={sliderMax} step={sliderStep} value={Math.min(extra, sliderMax)} aria-label="Extra each month" onChange={e => set({ debtExtra: parseInt(e.target.value, 10) || 0 })} style={{ width: '100%', accentColor: 'var(--accent)', height: 24 }} />
+                <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}><span>{f(0)}</span><span>{f(sliderMax / 2)}</span><span>{f(sliderMax)}</span></div>
               </div>
               <div style={{ flex: '1 1 280px', background: 'var(--accent-soft)', borderRadius: 27, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 4, justifyContent: 'center' }}>
                 <div className="pretty" style={{ fontSize: 18, fontWeight: 700, color: 'var(--ink)' }}>{extraResult}</div>

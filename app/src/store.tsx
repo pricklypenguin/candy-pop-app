@@ -25,7 +25,7 @@ interface Transient {
   toast: { title: string; sub: string } | null; showBreakdown: boolean; openCat: string | null;
   form: Record<string, string>; offset: number; logType: 'spend' | 'income';
   confirmReset: boolean; confirmRemove: boolean; confirmCat: string | null; newCatName: string; calc: Calc | null;
-  recentShown: number;
+  recentShown: number; showInOut: boolean;
 }
 export type State = Persisted & Prefs & Transient;
 
@@ -35,7 +35,7 @@ export const RECENT_PAGE = 8;
 
 const TRANSIENT: Omit<Transient, 'ob'> = {
   sheet: null, entry: '', note: '', selCat: 'groceries', toast: null, showBreakdown: false, openCat: null,
-  form: {}, offset: 0, logType: 'spend', confirmReset: false, confirmRemove: false, confirmCat: null, newCatName: '', calc: null, recentShown: RECENT_PAGE
+  form: {}, offset: 0, logType: 'spend', confirmReset: false, confirmRemove: false, confirmCat: null, newCatName: '', calc: null, recentShown: RECENT_PAGE, showInOut: false
 };
 
 function load(): State {

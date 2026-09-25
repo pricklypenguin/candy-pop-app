@@ -1,7 +1,6 @@
 import { monthLabel } from '../lib/dates';
-import { numOnly } from '../lib/money';
+import { numOnly, scaled } from '../lib/money';
 import { leftFor, monthly, period } from '../lib/model';
-import { CurrentOnlyNotice, PeriodBar } from '../PeriodBar';
 import { CALC_DEFAULT, useApp, type Calc } from '../store';
 import { Bar, H, Seg, primaryBg } from '../ui';
 
@@ -13,10 +12,8 @@ export function Goals() {
   const gSaved = s.goals.reduce((a, g) => a + g.saved, 0), gTarget = s.goals.reduce((a, g) => a + g.target, 0) || 1;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
-      <PeriodBar />
-      <H size={32} tight={2} style={{ paddingTop: 4 }}>Goals</H>
-      <CurrentOnlyNotice what="savings goals" />
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 28 }}>
+      <H size={32} tight={2}>Goals</H>
       <div className="card" style={{ borderRadius: 38, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div className="muted" style={{ fontSize: 16, fontWeight: 600 }}>Total saved</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
@@ -66,13 +63,15 @@ export function Goals() {
 
 /** "Plan a new goal": pick a monthly amount to see how long, or a timeframe to see the monthly amount. */
 function GoalPlanner() {
-  const { s, set, f, toast } = useApp();
-  const c: Calc = { ...CALC_DEFAULT, ...(s.calc || {}) };
-  const upd = (p: Partial<Calc>) => set(x => ({ calc: { ...CALC_DEFAULT, ...(x.calc || {}), ...p } }));
+  const { s, set, f, cur, toast } = useApp();
+  // Defaults and slider steps are sized for the currency (e.g. step 10 for $/£, 2,000 for ¥).
+  const step = scaled(cur, 10), base: Calc = { ...CALC_DEFAULT, target: String(scaled(cur, 2000)), monthly: scaled(cur, 100) };
+  const c: Calc = { ...base, ...(s.calc || {}) };
+  const upd = (p: Partial<Calc>) => set(x => ({ calc: { ...base, ...(x.calc || {}), ...p } }));
   const target = parseFloat(c.target) || 0, start = Math.min(parseFloat(c.start) || 0, target), need = Math.max(0, target - start);
   const byPay = c.mode === 'pay';
-  const maxPay = Math.max(50, Math.ceil(need / 10) * 10 || 50);
-  const monthlyAmt = byPay ? Math.min(Math.max(10, c.monthly), maxPay) : (need ? Math.ceil(need / c.months) : 0);
+  const maxPay = Math.max(5 * step, Math.ceil(need / step) * step);
+  const monthlyAmt = byPay ? Math.min(Math.max(step, c.monthly), maxPay) : (need ? Math.ceil(need / c.months) : 0);
   const months = byPay ? (monthlyAmt ? Math.ceil(need / monthlyAmt) : 0) : c.months;
   const P0 = period(s, 0), left = leftFor(s, P0), perP = Math.round(monthlyAmt * P0.f);
   const ok = !!c.name.trim() && need > 0 && monthlyAmt > 0;
@@ -106,9 +105,9 @@ function GoalPlanner() {
               <span style={{ fontSize: 15, fontWeight: 600 }}>{byPay ? 'Save each month' : 'Reach it in'}</span>
               <H size={28}>{byPay ? f(monthlyAmt) : span(c.months)}</H>
             </div>
-            <input type="range" aria-label={byPay ? 'Save each month' : 'Reach it in'} min={byPay ? 10 : 1} max={byPay ? maxPay : 60} step={byPay ? 10 : 1} value={byPay ? monthlyAmt : c.months}
+            <input type="range" aria-label={byPay ? 'Save each month' : 'Reach it in'} min={byPay ? step : 1} max={byPay ? maxPay : 60} step={byPay ? step : 1} value={byPay ? monthlyAmt : c.months}
               onChange={e => upd(byPay ? { monthly: parseInt(e.target.value, 10) } : { months: parseInt(e.target.value, 10) })} style={{ width: '100%', accentColor: 'var(--accent)', height: 24 }} />
-            <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}><span>{byPay ? f(10) : '1 month'}</span><span>{byPay ? f(maxPay) : '5 years'}</span></div>
+            <div className="muted" style={{ display: 'flex', justifyContent: 'space-between', fontSize: 12 }}><span>{byPay ? f(step) : '1 month'}</span><span>{byPay ? f(maxPay) : '5 years'}</span></div>
           </div>
         </div>
         <div style={{ flex: '1 1 280px', background: 'var(--accent-soft)', borderRadius: 30, padding: 22, display: 'flex', flexDirection: 'column', gap: 8 }}>

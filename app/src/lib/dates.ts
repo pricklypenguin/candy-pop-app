@@ -32,13 +32,6 @@ export const MONTH_TITLE = MONTHS_L[CUR_M - 1] + ' ' + CUR_Y;
 // How far back you can browse past periods: six months of history.
 export const HIST = Math.floor(Date.UTC(CUR_Y, CUR_M - 7, 1) / DAYMS);
 
-/** A calendar month: its first/last day numbers, length and title. m is 1–12 and may overflow (13 = Jan next year). */
-export function monthInfo(y: number, m: number) {
-  const d = new Date(Date.UTC(y, m - 1, 1)), yy = d.getUTCFullYear(), mm = d.getUTCMonth() + 1;
-  const start = dn(yy, mm, 1), dim = new Date(Date.UTC(yy, mm, 0)).getUTCDate();
-  return { y: yy, m: mm, start, end: start + dim - 1, dim, title: MONTHS_L[mm - 1] + ' ' + yy, isCurrent: yy === CUR_Y && mm === CUR_M, isPast: yy * 12 + mm < CUR_Y * 12 + CUR_M };
-}
-
 export const fmtD = (n: number) => { const d = dt(n); return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
 export function isoOf(n: number) {
   const d = dt(n);
