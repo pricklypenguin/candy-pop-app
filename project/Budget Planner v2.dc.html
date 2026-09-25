@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#F5F3EE;font-family:'Figtree',system-ui,sans-serif;color:#22211E;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+a{color:#2F7359}
+a:hover{color:#22211E}
+</style>
+</helmet>
+<div style="min-height:100vh;background:{{ pageBg }}">
+
+<div style="position:sticky;top:0;z-index:40;background:#FFFFFF;border-bottom:1px solid #E6E2D9">
+<div style="max-width:1200px;margin:0 auto;padding:12px 24px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:28px;height:28px;border-radius:9px;background:#2F7359;display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:#FFFFFF"></span></span>
+<span style="font-family:'Bricolage Grotesque',sans-serif;font-size:21px;font-weight:600;letter-spacing:-0.02em">Steady</span>
+</div>
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+<button onClick="{{ n.go }}" style="border:none;border-radius:999px;padding:10px 18px;font-size:15px;font-weight:700;background:{{ n.bg }};color:{{ n.color }}">{{ n.label }}</button>
+</sc-for>
+</div>
+</sc-if>
+<div style="flex:1"></div>
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ openLog }}" style="background:#2F7359;color:#FFFFFF;border:none;border-radius:999px;padding:11px 20px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="font-size:20px;line-height:1;font-weight:500">+</span>Log spending</button>
+</sc-if>
+<div style="display:flex;gap:2px;background:#F5F3EE;border-radius:999px;padding:4px">
+<sc-for list="{{ viewOpts }}" as="v" hint-placeholder-count="2">
+<button onClick="{{ v.pick }}" style="border:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;background:{{ v.bg }};color:{{ v.color }};box-shadow:{{ v.shadow }}">{{ v.label }}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;top:80px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;z-index:60;background:#22211E;color:#FFFFFF;border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px rgba(34,33,30,.25)">
+<div style="font-weight:600;font-size:16px">{{ toast.title }}</div>
+<div style="font-size:14px;color:#D9D6CE">{{ toast.sub }}</div>
+</div>
+</sc-if>
+
+<div style="max-width:{{ frameMax }};margin:0 auto;padding:{{ framePad }};background:{{ frameBg }};min-height:calc(100vh - 66px)">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:6px">
+<div style="font-size:15px;color:#6A675F;font-weight:500">{{ dateLabel }}</div>
+<div style="font-size:14px;color:#6A675F">Payday in {{ daysLeft }} days</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#FFFFFF;border-radius:28px;padding:26px 24px 22px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 0 #E6E2D9">
+<div style="font-size:16px;font-weight:600;color:#2F7359">Left to spend</div>
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em;color:#22211E">{{ safeTxt }}</div>
+<div style="font-size:16px;color:#6A675F;margin-top:4px;text-wrap:pretty">{{ safeSub }}</div>
+<sc-if value="{{ showBreakdownToggle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toggleBreakdown }}" style="align-self:flex-start;margin-top:10px;background:#F5F3EE;border:none;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:#22211E">{{ breakdownLabel }}</button>
+</sc-if>
+<sc-if value="{{ showBreakdown }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:14px;border-top:1px solid #E6E2D9">
+<sc-for list="{{ breakdown }}" as="row" hint-placeholder-count="5">
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#6A675F">{{ row.label }}</span><span style="font-weight:600">{{ row.val }}</span></div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;font-size:15px;padding-top:10px;border-top:1px dashed #E6E2D9"><span style="font-weight:600">Left to spend</span><span style="font-weight:700;color:#2F7359">{{ safeTxt }}</span></div>
+</div>
+</sc-if>
+</div>
+<sc-if value="{{ hasNextBill }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ goBills }}" style="background:#F6EAD6;border:none;border-radius:22px;padding:18px 20px;display:flex;align-items:center;gap:14px;text-align:left;color:#22211E">
+<div style="width:48px;height:48px;border-radius:14px;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0">
+<div style="font-size:11px;font-weight:700;color:#9A5E14;letter-spacing:.06em">SEP</div>
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:20px;font-weight:600;line-height:1">{{ nextBill.day }}</div>
+</div>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<div style="font-size:13px;font-weight:700;color:#9A5E14;letter-spacing:.04em">NEXT BILL · {{ nextBill.when }}</div>
+<div style="font-size:17px;font-weight:600">{{ nextBill.name }} · {{ nextBill.amt }}</div>
+<div style="font-size:14px;color:#6A675F">{{ moreBillsTxt }}</div>
+</div>
+</button>
+</sc-if>
+</div>
+
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px 8px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600">Where it's going</div>
+<div style="font-size:14px;color:#6A675F">{{ spentTxt }} spent</div>
+</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ catRows }}" as="c" hint-placeholder-count="6">
+<div style="border-bottom:{{ c.border }}">
+<button onClick="{{ c.toggle }}" style="width:100%;background:none;border:none;padding:14px 0;display:flex;flex-direction:column;gap:8px;text-align:left;color:#22211E">
+<div style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:10px;height:10px;border-radius:50%;background:{{ c.color }}"></span><span style="font-size:16px;font-weight:600">{{ c.name }}</span></div>
+<div style="display:flex;align-items:center;gap:8px"><span style="font-size:14px;font-weight:600;color:{{ c.leftColor }}">{{ c.leftTxt }}</span><svg width="14" height="14" viewBox="0 0 14 14" style="transform:rotate({{ c.rot }});transition:transform .2s"><path d="M3.5 5.5L7 9l3.5-3.5" fill="none" stroke="#6A675F" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+</div>
+<div style="width:100%;height:8px;border-radius:999px;background:#EFECE5;overflow:hidden"><div style="height:100%;border-radius:999px;width:{{ c.w }};background:{{ c.bar }}"></div></div>
+</button>
+<sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+<div style="background:#F9F8F4;border-radius:16px;padding:6px 14px;margin-bottom:14px;display:flex;flex-direction:column">
+<div style="font-size:13px;color:#6A675F;padding:8px 0 4px">{{ c.summary }}</div>
+<sc-for list="{{ c.txns }}" as="t" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #EFECE5">
+<div style="flex:1;display:flex;flex-direction:column;gap:1px"><div style="font-size:15px;font-weight:600">{{ t.title }}</div><div style="font-size:13px;color:#6A675F">{{ t.when }}</div></div>
+<div style="font-size:15px;font-weight:600">{{ t.amt }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A675F;padding:10px 0">Nothing spent here yet this month.</div></sc-if>
+<button onClick="{{ c.log }}" style="align-self:flex-start;background:none;border:none;padding:12px 0 8px;font-size:14px;font-weight:700;color:#2F7359">+ Log in {{ c.name }}</button>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<sc-if value="{{ showRecent }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600;padding:0 4px 8px">Recent</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ recent }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:{{ t.border }}">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ t.color }};flex-shrink:0"></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:1px;min-width:0">
+<div style="font-size:16px;font-weight:600">{{ t.title }}</div>
+<div style="font-size:13px;color:#6A675F">{{ t.meta }}</div>
+</div>
+<div style="font-size:16px;font-weight:600">{{ t.amt }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBills }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Bills</div>
+<div style="font-size:16px;color:#6A675F">{{ billsLeftTxt }}</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:18px;align-items:start">
+<div style="background:#FFFFFF;border-radius:24px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:10px">
+<div style="font-size:15px;font-weight:600;padding:0 4px">September 2026</div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;text-align:center">
+<sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7"><div style="font-size:12px;font-weight:600;color:#6A675F;padding:4px 0">{{ w }}</div></sc-for>
+<sc-for list="{{ calCells }}" as="d" hint-placeholder-count="35">
+<div style="height:{{ calH }};border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:14px;font-weight:{{ d.weight }};background:{{ d.bg }};color:{{ d.color }}">
+<span>{{ d.label }}</span>
+<span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }}"></span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:16px;padding:4px 4px 0;font-size:13px;color:#6A675F">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#C0843A"></span>Due</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:7px;height:7px;border-radius:50%;background:#B9B5AB"></span>Paid</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600;padding:0 4px">Coming up</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ upcomingBills }}" as="b" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:{{ b.border }}">
+<button onClick="{{ b.toggle }}" aria-label="Mark paid" style="width:32px;height:32px;border-radius:50%;border:2px solid {{ b.ring }};background:{{ b.fill }};color:#FFFFFF;font-size:16px;font-weight:700;flex-shrink:0;padding:0">{{ b.check }}</button>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<div style="font-size:16px;font-weight:600">{{ b.name }}</div>
+<div style="font-size:13px;font-weight:600;color:{{ b.whenColor }}">{{ b.when }}</div>
+</div>
+<div style="font-size:16px;font-weight:600">{{ b.amt }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ noUpcoming }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 0;font-size:15px;color:#6A675F">All paid for this month. Nice.</div></sc-if>
+</div>
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600;padding:8px 4px 0">Paid</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ paidBills }}" as="b" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:{{ b.border }}">
+<button onClick="{{ b.toggle }}" aria-label="Mark unpaid" style="width:32px;height:32px;border-radius:50%;border:2px solid {{ b.ring }};background:{{ b.fill }};color:#FFFFFF;font-size:16px;font-weight:700;flex-shrink:0;padding:0">{{ b.check }}</button>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<div style="font-size:16px;font-weight:600;color:#6A675F">{{ b.name }}</div>
+<div style="font-size:13px;color:#6A675F">{{ b.when }}</div>
+</div>
+<div style="font-size:16px;font-weight:600;color:#6A675F">{{ b.amt }}</div>
+</div>
+</sc-for>
+</div>
+<button onClick="{{ openAddBill }}" style="background:transparent;border:2px dashed #D6D1C6;border-radius:20px;padding:16px;font-size:16px;font-weight:600;color:#22211E">+ Add a bill</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDebt }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Debt</div>
+<div style="background:#FFFFFF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:600;color:#6A675F">Total you owe</div>
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:48px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ debtTotal }}</div>
+<div style="height:10px;border-radius:999px;background:#EFECE5;overflow:hidden;margin-top:14px"><div style="height:100%;border-radius:999px;background:#2F7359;width:{{ debtPct }}"></div></div>
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;font-size:14px;color:#6A675F;margin-top:4px"><span>{{ debtPaidTxt }}</span><span>{{ debtFreeTxt }}</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+<sc-for list="{{ debtRows }}" as="d" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:17px;font-weight:600">{{ d.name }}</div><div style="font-size:14px;color:#6A675F">{{ d.meta }}</div></div>
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:24px;font-weight:600">{{ d.bal }}</div>
+</div>
+<div style="height:8px;border-radius:999px;background:#EFECE5;overflow:hidden"><div style="height:100%;border-radius:999px;background:#2F7359;width:{{ d.w }}"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="font-size:14px;color:#6A675F">{{ d.freeBy }}</div>
+<button onClick="{{ d.pay }}" style="background:#E3EFE8;color:#2F7359;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;flex-shrink:0">Log payment</button>
+</div>
+</div>
+</sc-for>
+<button onClick="{{ openAddDebt }}" style="background:transparent;border:2px dashed #D6D1C6;border-radius:24px;padding:20px;min-height:72px;font-size:16px;font-weight:600;color:#22211E">+ Add a debt</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Goals</div>
+<div style="font-size:16px;color:#6A675F">{{ goalsSub }}</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+<sc-for list="{{ goalRows }}" as="g" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+<div style="font-size:17px;font-weight:600">{{ g.name }}</div>
+<div style="font-size:14px;font-weight:700;color:#2F7359">{{ g.pctTxt }}</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Bricolage Grotesque',sans-serif;font-size:30px;font-weight:600;letter-spacing:-0.02em">{{ g.saved }}</span><span style="font-size:15px;color:#6A675F">of {{ g.target }}</span></div>
+<div style="height:10px;border-radius:999px;background:#EFECE5;overflow:hidden"><div style="height:100%;border-radius:999px;background:#2F7359;width:{{ g.w }}"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="font-size:14px;color:#6A675F">{{ g.byTxt }}</div>
+<button onClick="{{ g.add }}" style="background:#E3EFE8;color:#2F7359;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;flex-shrink:0">Add money</button>
+</div>
+</div>
+</sc-for>
+<button onClick="{{ openAddGoal }}" style="background:transparent;border:2px dashed #D6D1C6;border-radius:24px;padding:20px;min-height:72px;font-size:16px;font-weight:600;color:#22211E">+ Add a saving goal</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;z-index:30;padding:0 16px 16px;pointer-events:none">
+<div style="display:flex;justify-content:flex-end;padding-bottom:12px">
+<button onClick="{{ openLog }}" style="pointer-events:auto;background:#2F7359;color:#FFFFFF;border:none;border-radius:999px;padding:16px 24px;font-size:17px;font-weight:700;box-shadow:0 8px 24px rgba(47,115,89,.35);display:flex;align-items:center;gap:8px"><span style="font-size:22px;line-height:1;font-weight:500">+</span>Log spending</button>
+</div>
+<div style="pointer-events:auto;background:#FFFFFF;border-radius:24px;padding:6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;box-shadow:0 6px 24px rgba(34,33,30,.10)">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+<button onClick="{{ n.go }}" style="border:none;border-radius:18px;padding:14px 0;font-size:15px;font-weight:700;background:{{ n.bg }};color:{{ n.color }}">{{ n.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:50;display:flex;justify-content:center;align-items:{{ sheetAlign }};padding:{{ sheetOuterPad }}">
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(34,33,30,.4)"></div>
+<div style="position:relative;width:100%;max-width:{{ sheetMax }};max-height:94vh;overflow:auto;background:#FFFFFF;border-radius:{{ sheetRadius }};padding:14px 20px 24px;display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}"><div style="width:40px;height:5px;border-radius:999px;background:#E6E2D9;align-self:center"></div></sc-if>
+<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
+<div style="font-family:'Bricolage Grotesque',sans-serif;font-size:22px;font-weight:600">{{ sheetTitle }}</div>
+<button onClick="{{ closeSheet }}" style="background:#F5F3EE;border:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;color:#22211E">Cancel</button>
+</div>
+
+<sc-if value="{{ isKeypad }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="text-align:center;font-family:'Bricolage Grotesque',sans-serif;font-size:56px;font-weight:600;letter-spacing:-0.03em;color:{{ amtColor }};padding:6px 0">{{ amtDisplay }}</div>
+<sc-if value="{{ isSpend }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ catChips }}" as="c" hint-placeholder-count="6">
+<button onClick="{{ c.pick }}" style="border-radius:16px;padding:12px 6px;font-size:14px;font-weight:600;border:2px solid {{ c.ring }};background:{{ c.bg }};color:#22211E;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }};flex-shrink:0"></span>{{ c.name }}</button>
+</sc-for>
+</div>
+<input value="{{ note }}" onChange="{{ setNote }}" placeholder="What was it? (optional)" style="border:none;background:#F5F3EE;border-radius:14px;padding:14px 16px;font-size:16px;color:#22211E;outline:none">
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+<button onClick="{{ k.press }}" style="height:56px;border:none;border-radius:16px;background:#F5F3EE;font-size:24px;font-weight:600;color:#22211E;font-family:'Bricolage Grotesque',sans-serif">{{ k.label }}</button>
+</sc-for>
+</div>
+<button onClick="{{ save }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ saveBg }};color:#FFFFFF">{{ saveLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isForm }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<sc-for list="{{ formFields }}" as="fl" hint-placeholder-count="3">
+<label style="grid-column:{{ fl.span }};display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6A675F">{{ fl.label }}<input value="{{ fl.value }}" onChange="{{ fl.change }}" inputMode="{{ fl.mode }}" placeholder="{{ fl.ph }}" style="border:none;background:#F5F3EE;border-radius:14px;padding:14px 16px;font-size:17px;color:#22211E;outline:none;width:100%"></label>
+</sc-for>
+</div>
+<div style="font-size:14px;color:#6A675F;text-wrap:pretty">{{ formNote }}</div>
+<button onClick="{{ saveForm }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ formSaveBg }};color:#FFFFFF;margin-top:4px">{{ formBtn }}</button>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showDaily&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;calmMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;hideCents&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Numbers&quot;}}">
+const TODAY = 25, DIM = 30, KEY = 'steady.v2';
+const CATS = [
+  { id: 'groceries', name: 'Groceries', budget: 350, color: '#4E8A6B' },
+  { id: 'eating', name: 'Eating out', budget: 120, color: '#C0843A' },
+  { id: 'transport', name: 'Transport', budget: 120, color: '#4F7FB0' },
+  { id: 'fun', name: 'Fun', budget: 80, color: '#8A72B8' },
+  { id: 'shopping', name: 'Shopping', budget: 80, color: '#BF6A7E' },
+  { id: 'other', name: 'Other', budget: 60, color: '#8B877E' }
+];
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const FORMS = {
+  bill: { title: 'New bill', btn: 'Add bill', note: 'It repeats every month. We\'ll set the money aside automatically.', fields: [
+    { k: 'name', label: 'What\'s the bill?', ph: 'e.g. Water', full: true, req: true },
+    { k: 'amount', label: 'How much?', ph: '$0', num: true, req: true },
+    { k: 'day', label: 'Due on day', ph: '1–31', int: true, req: true }] },
+  debt: { title: 'New debt', btn: 'Add debt', note: 'We\'ll set the monthly payment aside before showing what\'s left to spend.', fields: [
+    { k: 'name', label: 'What\'s it called?', ph: 'e.g. Store card', full: true, req: true },
+    { k: 'balance', label: 'How much you owe', ph: '$0', num: true, req: true },
+    { k: 'min', label: 'Monthly payment', ph: '$0', num: true, req: true },
+    { k: 'rate', label: 'Interest rate % (optional)', ph: 'e.g. 19.9', num: true, full: true }] },
+  goal: { title: 'New saving goal', btn: 'Add goal', note: 'We\'ll set the monthly amount aside before showing what\'s left to spend.', fields: [
+    { k: 'name', label: 'What are you saving for?', ph: 'e.g. Holiday gifts', full: true, req: true },
+    { k: 'target', label: 'How much you need', ph: '$0', num: true, req: true },
+    { k: 'monthly', label: 'Save each month', ph: '$0', num: true, req: true },
+    { k: 'saved', label: 'Already saved (optional)', ph: '$0', num: true, full: true }] }
+};
+function seed() {
+  const t = (id, amt, cat, note, day) => ({ id, amt, cat, note, day });
+  return {
+    income: 3200,
+    bills: [
+      { id: 'b1', name: 'Rent', amount: 1200, day: 1, paid: true },
+      { id: 'b2', name: 'Phone', amount: 55, day: 5, paid: true },
+      { id: 'b3', name: 'Internet', amount: 60, day: 12, paid: true },
+      { id: 'b4', name: 'Car insurance', amount: 110, day: 18, paid: true },
+      { id: 'b5', name: 'Electric', amount: 85, day: 26, paid: false },
+      { id: 'b6', name: 'Streaming', amount: 11, day: 28, paid: false },
+      { id: 'b7', name: 'Gym', amount: 30, day: 30, paid: false }
+    ],
+    debts: [
+      { id: 'd1', name: 'Credit card', balance: 2400, original: 3100, min: 75, rate: 22.9 },
+      { id: 'd2', name: 'Car loan', balance: 8200, original: 14000, min: 240, rate: 6.5 },
+      { id: 'd3', name: 'Student loan', balance: 14500, original: 21000, min: 160, rate: 5 }
+    ],
+    goals: [
+      { id: 'g1', name: 'Emergency fund', saved: 1000, target: 3000, monthly: 150 },
+      { id: 'g2', name: 'Summer trip', saved: 420, target: 1200, monthly: 100 },
+      { id: 'g3', name: 'New laptop', saved: 300, target: 900, monthly: 50 }
+    ],
+    txns: [
+      t('t1', 38, 'groceries', 'Corner market', 24), t('t2', 18, 'eating', 'Lunch', 24),
+      t('t3', 40, 'transport', 'Gas', 22), t('t4', 15, 'fun', 'Movie', 21),
+      t('t5', 47, 'groceries', '', 20), t('t6', 36, 'shopping', 'Shoes', 19),
+      t('t7', 12, 'other', 'Pharmacy', 18), t('t8', 32, 'eating', 'Pizza night', 16),
+      t('t9', 64, 'groceries', '', 14), t('t10', 28, 'fun', 'Concert', 12),
+      t('t11', 50, 'other', 'Gift', 10), t('t12', 45, 'transport', 'Gas', 9),
+      t('t13', 24, 'eating', 'Brunch', 7), t('t14', 59, 'shopping', 'Jacket', 5),
+      t('t15', 82, 'groceries', 'Big shop', 3), t('t16', 22, 'other', 'Haircut', 2)
+    ]
+  };
+}
+function payoffMonths(bal, rate, pay) {
+  let m = 0;
+  while (bal > 0 && m < 600) { bal = bal * (1 + rate / 1200) - pay; m++; }
+  return m;
+}
+function monthLabel(add) { const d = new Date(2026, 8 + add, 1); return MONTHS[d.getMonth()] + ' ' + d.getFullYear(); }
+
+class Component extends DCLogic {
+  state = (() => {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    return Object.assign({ tab: 'home', view: 'web' }, seed(), saved || {}, {
+      sheet: null, entry: '', note: '', selCat: 'groceries', toast: null, showBreakdown: false, openCat: null, form: {}
+    });
+  })();
+
+  componentDidUpdate() {
+    const { tab, view, income, bills, debts, goals, txns } = this.state;
+    try { localStorage.setItem(KEY, JSON.stringify({ tab, view, income, bills, debts, goals, txns })); } catch (e) {}
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  fmt(n) {
+    const hide = this.props.hideCents ?? true;
+    const neg = n < 0; n = Math.abs(n);
+    const s = n.toLocaleString('en-US', { minimumFractionDigits: hide ? 0 : 2, maximumFractionDigits: hide ? 0 : 2 });
+    return (neg ? '−$' : '$') + s;
+  }
+  totals() {
+    const s = this.state;
+    const bills = s.bills.reduce((a, b) => a + b.amount, 0);
+    const mins = s.debts.reduce((a, d) => a + Math.min(d.min, d.balance), 0);
+    const goals = s.goals.reduce((a, g) => a + (g.saved < g.target ? g.monthly : 0), 0);
+    const spent = s.txns.reduce((a, t) => a + t.amt, 0);
+    return { bills, mins, goals, spent, safe: s.income - bills - mins - goals - spent };
+  }
+  toast(title, sub) {
+    clearTimeout(this._t);
+    this.setState({ toast: { title, sub } });
+    this._t = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+  open(sheet, extra) { this.setState(Object.assign({ sheet, entry: '', note: '', form: {} }, extra || {})); }
+  press(k) {
+    this.setState(s => {
+      let e = s.entry;
+      if (k === '⌫') e = e.slice(0, -1);
+      else if (k === '.') { if (!e.includes('.')) e = (e || '0') + '.'; }
+      else {
+        if (e.includes('.') && e.split('.')[1].length >= 2) return null;
+        if (e.replace('.', '').length >= 6) return null;
+        e = e === '0' ? k : e + k;
+      }
+      return { entry: e };
+    });
+  }
+  save() {
+    const s = this.state, amt = parseFloat(s.entry);
+    if (!amt) return;
+    const sh = s.sheet;
+    if (sh.mode === 'spend') {
+      const cat = CATS.find(c => c.id === s.selCat);
+      const txns = [{ id: 't' + Date.now(), amt, cat: cat.id, note: s.note.trim(), day: TODAY }, ...s.txns];
+      this.setState({ txns, sheet: null }, () => {
+        const left = this.totals().safe;
+        this.toast('Logged ' + this.fmt(amt) + ' · ' + cat.name, left >= 0 ? this.fmt(left) + ' left to spend' : 'You\'re ' + this.fmt(-left) + ' over this month');
+      });
+    } else if (sh.mode === 'goal') {
+      const g = s.goals.find(x => x.id === sh.id);
+      this.setState({ goals: s.goals.map(x => x.id === sh.id ? { ...x, saved: x.saved + amt } : x), sheet: null });
+      this.toast('Added ' + this.fmt(amt) + ' to ' + g.name, this.fmt(Math.max(0, g.target - g.saved - amt)) + ' to go');
+    } else if (sh.mode === 'debt') {
+      const d = s.debts.find(x => x.id === sh.id);
+      const nb = Math.max(0, d.balance - amt);
+      this.setState({ debts: s.debts.map(x => x.id === sh.id ? { ...x, balance: nb } : x), sheet: null });
+      this.toast('Paid ' + this.fmt(amt) + ' on ' + d.name, nb ? this.fmt(nb) + ' left' : 'Paid off. Huge.');
+    }
+  }
+  formValid(kind) {
+    const f = this.state.form;
+    return FORMS[kind].fields.every(fl => {
+      const v = (f[fl.k] || '').trim();
+      if (!fl.req) return true;
+      if (fl.k === 'name') return !!v;
+      if (fl.k === 'day') { const d = parseInt(v, 10); return d >= 1 && d <= 31; }
+      return parseFloat(v) > 0;
+    });
+  }
+  saveForm() {
+    const kind = this.state.sheet.kind;
+    if (!this.formValid(kind)) return;
+    const f = this.state.form, n = k => parseFloat(f[k]) || 0, name = f.name.trim(), id = Date.now();
+    if (kind === 'bill') {
+      const day = Math.min(parseInt(f.day, 10), DIM);
+      this.setState(s => ({ bills: [...s.bills, { id: 'b' + id, name, amount: n('amount'), day, paid: day < TODAY }], sheet: null }));
+      this.toast(name + ' added', 'Due on the ' + day + this.ord(day) + ' each month');
+    } else if (kind === 'debt') {
+      this.setState(s => ({ debts: [...s.debts, { id: 'd' + id, name, balance: n('balance'), original: n('balance'), min: n('min'), rate: n('rate') }], sheet: null }));
+      this.toast(name + ' added', this.fmt(n('min')) + ' a month is now set aside');
+    } else {
+      this.setState(s => ({ goals: [...s.goals, { id: 'g' + id, name, target: n('target'), monthly: n('monthly'), saved: n('saved') }], sheet: null }));
+      this.toast(name + ' added', this.fmt(n('monthly')) + ' a month is now set aside');
+    }
+  }
+  ord(n) { const v = n % 100; return (v >= 11 && v <= 13) ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; }
+  toggleBill(id) { this.setState(s => ({ bills: s.bills.map(b => b.id === id ? { ...b, paid: !b.paid } : b) })); }
+
+  renderVals() {
+    const s = this.state, T = this.totals(), f = n => this.fmt(n);
+    const calm = this.props.calmMode ?? false;
+    const showDaily = this.props.showDaily ?? true;
+    const web = s.view === 'web';
+    const daysLeft = DIM - TODAY + 1;
+    const safe = Math.max(0, T.safe);
+    const safeSub = T.safe < 0
+      ? 'You\'re ' + f(-T.safe) + ' over for this month. That\'s okay — payday is close.'
+      : showDaily ? 'About ' + f(Math.floor(T.safe / daysLeft)) + ' a day until payday. Bills, debt and savings are already set aside.'
+      : 'Bills, debt and savings are already set aside.';
+
+    const sortedBills = [...s.bills].sort((a, b) => a.day - b.day);
+    const unpaid = sortedBills.filter(b => !b.paid);
+    const when = b => {
+      if (b.paid) return 'Paid · Sep ' + b.day;
+      const d = b.day - TODAY;
+      if (d < 0) return 'Overdue · was due Sep ' + b.day;
+      if (d === 0) return 'Due today';
+      if (d === 1) return 'Due tomorrow';
+      return 'Due in ' + d + ' days · Sep ' + b.day;
+    };
+    const next = unpaid[0];
+    const nextWhen = next ? (next.day - TODAY < 0 ? 'OVERDUE' : next.day === TODAY ? 'TODAY' : next.day - TODAY === 1 ? 'TOMORROW' : 'IN ' + (next.day - TODAY) + ' DAYS') : '';
+    const rest = unpaid.slice(1);
+    const billRow = (b, i, arr) => ({
+      name: b.name, amt: f(b.amount), when: when(b),
+      whenColor: b.paid ? '#6A675F' : (b.day - TODAY <= 2 ? '#9A5E14' : '#6A675F'),
+      ring: b.paid ? '#2F7359' : '#D6D1C6', fill: b.paid ? '#2F7359' : '#FFFFFF', check: b.paid ? '✓' : '',
+      border: i === arr.length - 1 ? 'none' : '1px solid #EFECE5', toggle: () => this.toggleBill(b.id)
+    });
+
+    const first = new Date(2026, 8, 1).getDay();
+    const calCells = [];
+    for (let i = 0; i < first; i++) calCells.push({ label: '', bg: 'transparent', color: '#22211E', dot: 'transparent', weight: 500 });
+    for (let d = 1; d <= DIM; d++) {
+      const bs = s.bills.filter(b => b.day === d);
+      const due = bs.some(b => !b.paid), isToday = d === TODAY;
+      calCells.push({
+        label: d, weight: isToday || due ? 700 : 500,
+        bg: isToday ? '#22211E' : due ? '#F6EAD6' : 'transparent',
+        color: isToday ? '#FFFFFF' : d < TODAY ? '#9C988F' : '#22211E',
+        dot: bs.length ? (due ? '#C0843A' : '#B9B5AB') : 'transparent'
+      });
+    }
+
+    const dayName = d => d === TODAY ? 'Today' : d === TODAY - 1 ? 'Yesterday' : 'Sep ' + d;
+    const byDay = [...s.txns].sort((a, b) => b.day - a.day);
+    const catRows = CATS.map((c, i) => {
+      const list = byDay.filter(t => t.cat === c.id);
+      const sp = list.reduce((a, t) => a + t.amt, 0), pct = sp / c.budget, left = c.budget - sp;
+      const open = s.openCat === c.id;
+      return {
+        name: c.name, color: c.color, w: Math.min(100, pct * 100) + '%',
+        bar: pct > 1 ? '#C0843A' : c.color,
+        leftTxt: left >= 0 ? f(left) + ' left' : f(-left) + ' over',
+        leftColor: left >= 0 ? '#6A675F' : '#9A5E14',
+        border: i === CATS.length - 1 ? 'none' : '1px solid #EFECE5',
+        open, rot: open ? '180deg' : '0deg',
+        toggle: () => this.setState(x => ({ openCat: x.openCat === c.id ? null : c.id })),
+        summary: f(sp) + ' of ' + f(c.budget) + ' · ' + list.length + ' purchase' + (list.length === 1 ? '' : 's'),
+        txns: list.map(t => ({ title: t.note || c.name, when: dayName(t.day), amt: f(t.amt) })),
+        empty: !list.length,
+        log: () => this.open({ mode: 'spend' }, { selCat: c.id })
+      };
+    });
+    const recentList = byDay.slice(0, web ? 7 : 5);
+    const recent = recentList.map((t, i) => {
+      const c = CATS.find(x => x.id === t.cat) || CATS[5];
+      return { title: t.note || c.name, meta: (t.note ? c.name + ' · ' : '') + dayName(t.day), amt: f(t.amt), color: c.color, border: i === recentList.length - 1 ? 'none' : '1px solid #EFECE5' };
+    });
+
+    const debtTotal = s.debts.reduce((a, d) => a + d.balance, 0);
+    const debtOrig = s.debts.reduce((a, d) => a + d.original, 0) || 1;
+    let maxM = 0, stuck = false;
+    const debtRows = s.debts.map(d => {
+      const m = d.balance > 0 ? payoffMonths(d.balance, d.rate, d.min) : 0;
+      if (m >= 600) stuck = true; else maxM = Math.max(maxM, m);
+      return {
+        name: d.name, bal: f(d.balance), meta: f(d.min) + '/mo' + (d.rate ? ' · ' + d.rate + '% interest' : ''),
+        w: Math.round((1 - d.balance / d.original) * 100) + '%',
+        freeBy: d.balance <= 0 ? 'Paid off' : m >= 600 ? 'Payment doesn\'t cover interest' : 'Paid off by ' + monthLabel(m),
+        pay: () => this.open({ mode: 'debt', id: d.id })
+      };
+    });
+
+    const goalRows = s.goals.map(g => {
+      const left = Math.max(0, g.target - g.saved), pct = Math.min(1, g.saved / g.target);
+      const m = Math.ceil(left / g.monthly);
+      return {
+        name: g.name, saved: f(g.saved), target: f(g.target), w: pct * 100 + '%', pctTxt: Math.round(pct * 100) + '%',
+        byTxt: left ? f(g.monthly) + '/mo · reach it by ' + monthLabel(m) : 'Goal reached',
+        add: () => this.open({ mode: 'goal', id: g.id })
+      };
+    });
+
+    const sh = s.sheet, amtNum = parseFloat(s.entry) || 0;
+    let sheetTitle = '';
+    if (sh) {
+      if (sh.mode === 'spend') sheetTitle = 'Log spending';
+      if (sh.mode === 'goal') sheetTitle = 'Add to ' + s.goals.find(g => g.id === sh.id).name;
+      if (sh.mode === 'debt') sheetTitle = 'Pay ' + s.debts.find(d => d.id === sh.id).name;
+      if (sh.mode === 'form') sheetTitle = FORMS[sh.kind].title;
+    }
+    const form = sh && sh.mode === 'form' ? FORMS[sh.kind] : null;
+    const formFields = form ? form.fields.map(fl => ({
+      label: fl.label, ph: fl.ph, value: s.form[fl.k] || '', span: fl.full ? '1 / -1' : 'auto',
+      mode: fl.int ? 'numeric' : fl.num ? 'decimal' : 'text',
+      change: e => {
+        let v = e.target.value;
+        if (fl.int) v = v.replace(/[^0-9]/g, '').slice(0, 2);
+        else if (fl.num) v = v.replace(/[^0-9.]/g, '');
+        this.setState(x => ({ form: { ...x.form, [fl.k]: v } }));
+      }
+    })) : [];
+    const tabs = [['home', 'Home'], ['bills', 'Bills'], ['debt', 'Debt'], ['goals', 'Goals']];
+
+    return {
+      isWeb: web, isMobile: !web,
+      pageBg: web ? '#F5F3EE' : '#E9E6DF',
+      frameMax: web ? '1200px' : '440px',
+      framePad: web ? '8px 32px 80px' : '0 20px 180px',
+      frameBg: web ? 'transparent' : '#F5F3EE',
+      calH: web ? '48px' : '40px',
+      viewOpts: [['web', 'Web'], ['mobile', 'Mobile']].map(([id, label]) => ({
+        label, pick: () => this.setState({ view: id }),
+        bg: s.view === id ? '#FFFFFF' : 'transparent', color: s.view === id ? '#22211E' : '#6A675F',
+        shadow: s.view === id ? '0 1px 3px rgba(34,33,30,.12)' : 'none'
+      })),
+      toast: s.toast,
+      isHome: s.tab === 'home', isBills: s.tab === 'bills', isDebt: s.tab === 'debt', isGoals: s.tab === 'goals',
+      dateLabel: 'Friday, Sep ' + TODAY, daysLeft,
+      safeTxt: f(safe), safeSub,
+      showBreakdownToggle: !calm, showBreakdown: !calm && s.showBreakdown,
+      breakdownLabel: s.showBreakdown ? 'Hide the math' : 'How is this worked out?',
+      toggleBreakdown: () => this.setState(x => ({ showBreakdown: !x.showBreakdown })),
+      breakdown: [
+        { label: 'Money coming in', val: '+' + f(s.income) },
+        { label: 'Bills this month', val: '−' + f(T.bills) },
+        { label: 'Debt payments', val: '−' + f(T.mins) },
+        { label: 'Saving for goals', val: '−' + f(T.goals) },
+        { label: 'Spent so far', val: '−' + f(T.spent) }
+      ],
+      hasNextBill: !!next,
+      nextBill: next ? { name: next.name, amt: f(next.amount), day: next.day, when: nextWhen } : {},
+      moreBillsTxt: rest.length ? rest.length + ' more after this · ' + f(rest.reduce((a, b) => a + b.amount, 0)) : 'Last bill this month',
+      goBills: () => this.setState({ tab: 'bills' }),
+      spentTxt: f(T.spent), catRows, showRecent: !calm, recent,
+      billsLeftTxt: unpaid.length ? f(unpaid.reduce((a, b) => a + b.amount, 0)) + ' left to pay this month · ' + unpaid.length + ' bill' + (unpaid.length > 1 ? 's' : '') : 'Everything is paid this month',
+      weekdays: ['S', 'M', 'T', 'W', 'T', 'F', 'S'], calCells,
+      upcomingBills: unpaid.map(billRow), noUpcoming: !unpaid.length,
+      paidBills: sortedBills.filter(b => b.paid).map(billRow),
+      openAddBill: () => this.open({ mode: 'form', kind: 'bill' }),
+      openAddDebt: () => this.open({ mode: 'form', kind: 'debt' }),
+      openAddGoal: () => this.open({ mode: 'form', kind: 'goal' }),
+      debtTotal: f(debtTotal), debtPct: Math.max(0, Math.round((1 - debtTotal / debtOrig) * 100)) + '%',
+      debtPaidTxt: f(Math.max(0, debtOrig - debtTotal)) + ' paid off so far',
+      debtFreeTxt: stuck ? 'One payment is too low to finish' : 'Debt-free by ' + (maxM ? monthLabel(maxM) : 'now'),
+      debtRows,
+      goalsSub: f(T.goals) + ' set aside each month', goalRows,
+      nav: tabs.map(([id, label]) => ({ label, go: () => this.setState({ tab: id, openCat: null }), bg: s.tab === id ? '#E3EFE8' : 'transparent', color: s.tab === id ? '#2F7359' : '#6A675F' })),
+      openLog: () => this.open({ mode: 'spend' }),
+      sheetOpen: !!sh, sheetTitle, closeSheet: () => this.setState({ sheet: null }),
+      sheetAlign: web ? 'center' : 'flex-end', sheetOuterPad: web ? '24px' : '0',
+      sheetMax: web ? '480px' : '440px', sheetRadius: web ? '28px' : '28px 28px 0 0',
+      isKeypad: !!sh && sh.mode !== 'form', isSpend: !!sh && sh.mode === 'spend', isForm: !!form,
+      amtDisplay: '$' + (s.entry || '0'), amtColor: s.entry ? '#22211E' : '#B9B5AB',
+      catChips: CATS.map(c => ({ name: c.name, color: c.color, pick: () => this.setState({ selCat: c.id }), ring: s.selCat === c.id ? '#22211E' : '#EFECE5', bg: s.selCat === c.id ? '#F5F3EE' : '#FFFFFF' })),
+      note: s.note, setNote: e => this.setState({ note: e.target.value }),
+      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map(k => ({ label: k, press: () => this.press(k) })),
+      save: () => this.save(), saveBg: amtNum ? '#2F7359' : '#B9B5AB',
+      saveLabel: !sh ? '' : sh.mode === 'spend' ? (amtNum ? 'Log ' + f(amtNum) : 'Enter an amount') : sh.mode === 'goal' ? 'Add money' : 'Log payment',
+      formFields, formNote: form ? form.note : '', formBtn: form ? form.btn : '',
+      saveForm: () => this.saveForm(), formSaveBg: form && this.formValid(sh.kind) ? '#2F7359' : '#B9B5AB'
+    };
+  }
+}
+</script>
+</body>
+</html>

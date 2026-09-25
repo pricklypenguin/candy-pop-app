@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#FFF6E9;font-family:'Nunito',system-ui,sans-serif;color:#2A1B3D;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer}
+input{font-family:inherit}
+a{color:#FF4F8B}
+a:hover{color:#2A1B3D}
+</style>
+</helmet>
+<div style="min-height:100vh;background:{{ pageBg }}">
+
+<div style="position:sticky;top:0;z-index:40;background:#FFFFFF;border-bottom:1px solid #EFE2CE">
+<div style="max-width:1200px;margin:0 auto;padding:12px 20px;display:flex;flex-wrap:wrap;align-items:center;gap:10px 12px">
+<div style="display:flex;align-items:center;gap:10px">
+<span style="width:28px;height:28px;border-radius:9px;background:#FF4F8B;display:flex;align-items:center;justify-content:center"><span style="width:10px;height:10px;border-radius:50%;background:#FFFFFF"></span></span>
+<span style="font-family:'Fredoka',sans-serif;font-size:21px;font-weight:600;letter-spacing:-0.02em">Steady</span>
+</div>
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+<button onClick="{{ n.go }}" style="border:none;border-radius:999px;padding:10px 18px;font-size:15px;font-weight:700;background:{{ n.bg }};color:{{ n.color }}">{{ n.label }}</button>
+</sc-for>
+</div>
+</sc-if>
+<div style="flex:1"></div>
+<sc-if value="{{ isWeb }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ openLog }}" style="background:#FF4F8B;color:#FFFFFF;border:none;border-radius:999px;padding:11px 20px;font-size:15px;font-weight:700;display:flex;align-items:center;gap:8px"><span style="font-size:20px;line-height:1;font-weight:500">+</span>Log spending</button>
+</sc-if>
+<button onClick="{{ openSettings }}" style="background:#FFF6E9;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;color:#2A1B3D">Settings</button>
+<div style="display:flex;gap:2px;background:#FFF6E9;border-radius:999px;padding:4px">
+<sc-for list="{{ viewOpts }}" as="v" hint-placeholder-count="2">
+<button onClick="{{ v.pick }}" style="border:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700;background:{{ v.bg }};color:{{ v.color }};box-shadow:{{ v.shadow }}">{{ v.label }}</button>
+</sc-for>
+</div>
+</div>
+</div>
+
+<sc-if value="{{ showOb }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:70;background:#FFF6E9;overflow:auto">
+<div style="max-width:{{ obMax }};margin:0 auto;min-height:100%;padding:20px 20px 24px;display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;align-items:center;gap:14px;min-height:40px">
+<sc-if value="{{ obCanClose }}" hint-placeholder-val="{{ false }}"><button onClick="{{ obClose }}" style="background:#FFFFFF;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;color:#2A1B3D">Cancel</button></sc-if>
+<sc-if value="{{ obCanBack }}" hint-placeholder-val="{{ false }}"><button onClick="{{ obBack }}" style="background:#FFFFFF;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;color:#2A1B3D">Back</button></sc-if>
+<sc-if value="{{ obShowDots }}" hint-placeholder-val="{{ false }}">
+<div style="flex:1;display:flex;gap:6px"><sc-for list="{{ obDots }}" as="od" hint-placeholder-count="4"><span style="flex:1;height:6px;border-radius:999px;background:{{ od.bg }}"></span></sc-for></div>
+<span style="font-size:13px;font-weight:600;color:#6E5E80">{{ obStepTxt }}</span>
+</sc-if>
+</div>
+
+<sc-if value="{{ obS0 }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:28px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="width:52px;height:52px;border-radius:16px;background:#FF4F8B;display:flex;align-items:center;justify-content:center"><span style="width:18px;height:18px;border-radius:50%;background:#FFFFFF"></span></span>
+<div style="font-family:'Fredoka',sans-serif;font-size:40px;font-weight:600;letter-spacing:-0.03em;line-height:1.05;text-wrap:pretty;margin-top:6px">Let’s get your money sorted.</div>
+<div style="font-size:17px;color:#6E5E80;text-wrap:pretty">Four quick questions, about two minutes. You can change any of it later.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:16px;font-weight:700">First, which currency do you use?</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px">
+<sc-for list="{{ obCurrencies }}" as="c" hint-placeholder-count="16">
+<button onClick="{{ c.pick }}" style="display:flex;align-items:center;gap:10px;text-align:left;border:2px solid {{ c.ring }};background:{{ c.bg }};border-radius:16px;padding:10px 12px;color:#2A1B3D;min-width:0">
+<span style="width:36px;height:36px;border-radius:10px;background:{{ c.symBg }};color:{{ c.symColor }};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;flex-shrink:0">{{ c.sym }}</span>
+<span style="display:flex;flex-direction:column;min-width:0"><span style="font-size:15px;font-weight:700">{{ c.code }}</span><span style="font-size:12px;color:#6E5E80;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ c.name }}</span></span>
+</button>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ obS1 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;text-wrap:pretty">How much do you get paid?</div>
+<div style="font-size:17px;color:#6E5E80;text-wrap:pretty">Your take-home pay each payday, after tax.</div>
+</div>
+<div style="display:flex;align-items:center;gap:10px;background:#FFFFFF;border-radius:22px;padding:14px 20px">
+<span style="font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;color:#A898B5">{{ obSym }}</span>
+<input value="{{ obIncAmt }}" onChange="{{ setObIncAmt }}" inputMode="decimal" placeholder="0" style="flex:1;min-width:0;border:none;outline:none;background:transparent;font-family:'Fredoka',sans-serif;font-size:42px;font-weight:600;letter-spacing:-0.02em;color:#2A1B3D">
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<div style="font-size:15px;font-weight:700">How often?</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ obFreqOpts }}" as="fo" hint-placeholder-count="3"><button onClick="{{ fo.pick }}" style="border:2px solid {{ fo.ring }};border-radius:16px;padding:14px 8px;font-size:15px;font-weight:700;background:{{ fo.bg }};color:#2A1B3D">{{ fo.label }}</button></sc-for>
+</div>
+</div>
+<label style="display:flex;flex-direction:column;gap:10px;font-size:15px;font-weight:700">When’s your next payday?<input type="date" value="{{ obIncNext }}" onChange="{{ setObIncNext }}" style="border:none;background:#FFFFFF;border-radius:16px;padding:15px 16px;font-size:17px;font-weight:500;color:#2A1B3D;outline:none;width:100%"></label>
+<sc-if value="{{ obHasIncPreview }}" hint-placeholder-val="{{ false }}"><div style="background:#FFE2EE;border-radius:16px;padding:14px 16px;font-size:15px;font-weight:600;color:#0F6B3E">{{ obIncPreview }}</div></sc-if>
+<div style="font-size:14px;color:#6E5E80">More than one income? Add the rest later on Bills &amp; paydays.</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ obS2 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;text-wrap:pretty">How often should your budget reset?</div>
+<div style="font-size:17px;color:#6E5E80;text-wrap:pretty">Each time it resets you get a fresh left-to-spend number. Matching your payday is easiest.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<sc-for list="{{ obPeriodOpts }}" as="po" hint-placeholder-count="4">
+<button onClick="{{ po.pick }}" style="display:flex;align-items:center;gap:14px;text-align:left;border:2px solid {{ po.ring }};background:{{ po.bg }};border-radius:18px;padding:16px;color:#2A1B3D">
+<span style="width:22px;height:22px;border-radius:50%;border:2px solid {{ po.dotRing }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:11px;height:11px;border-radius:50%;background:{{ po.dot }}"></span></span>
+<span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:17px;font-weight:700">{{ po.name }}</span><span style="font-size:14px;color:#6E5E80">{{ po.sub }}</span></span>
+<sc-if value="{{ po.showTag }}" hint-placeholder-val="{{ false }}"><span style="font-size:12px;font-weight:700;border-radius:999px;padding:5px 10px;background:#FFE2EE;color:#FF4F8B;flex-shrink:0">Matches your pay</span></sc-if>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{ obIsCustom }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">Starts on<input type="date" value="{{ obCStart }}" onChange="{{ setObCStart }}" style="border:none;background:#FFFFFF;border-radius:14px;padding:13px 14px;font-size:16px;color:#2A1B3D;outline:none;width:100%"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">Length in days<input value="{{ obCLen }}" onChange="{{ setObCLen }}" inputMode="numeric" placeholder="e.g. 10" style="border:none;background:#FFFFFF;border-radius:14px;padding:13px 14px;font-size:16px;color:#2A1B3D;outline:none;width:100%"></label>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ obS3 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;text-wrap:pretty">Which bills do you pay each month?</div>
+<div style="font-size:17px;color:#6E5E80;text-wrap:pretty">Just the regular ones. Tap to add, then fill in how much and the due day.</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<sc-for list="{{ obSuggest }}" as="sg" hint-placeholder-count="8"><button onClick="{{ sg.add }}" style="border:none;border-radius:999px;padding:11px 16px;font-size:15px;font-weight:700;background:#FFFFFF;color:#2A1B3D">+ {{ sg.name }}</button></sc-for>
+<button onClick="{{ obAddBlank }}" style="border:2px dashed #E2D1B8;border-radius:999px;padding:9px 16px;font-size:15px;font-weight:700;background:transparent;color:#2A1B3D">+ Something else</button>
+</div>
+<sc-if value="{{ obHasBills }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFFFF;border-radius:22px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 64px 32px;gap:8px;font-size:12px;font-weight:700;color:#6E5E80;letter-spacing:.03em;padding:0 2px">
+<span>BILL</span><span>AMOUNT</span><span>DUE DAY</span><span></span>
+</div>
+<sc-for list="{{ obBills }}" as="br" hint-placeholder-count="2">
+<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) 64px 32px;gap:8px;align-items:center">
+<input value="{{ br.name }}" onChange="{{ br.setName }}" placeholder="Name" style="border:none;background:#FFF6E9;border-radius:12px;padding:12px;font-size:16px;font-weight:600;color:#2A1B3D;outline:none;width:100%;min-width:0">
+<input value="{{ br.amount }}" onChange="{{ br.setAmt }}" inputMode="decimal" placeholder="{{ br.amtPh }}" style="border:none;background:#FFF6E9;border-radius:12px;padding:12px;font-size:16px;color:#2A1B3D;outline:none;width:100%;min-width:0">
+<input value="{{ br.day }}" onChange="{{ br.setDay }}" inputMode="numeric" placeholder="1–31" style="border:none;background:#FFF6E9;border-radius:12px;padding:12px 8px;font-size:16px;color:#2A1B3D;outline:none;width:100%;text-align:center">
+<button onClick="{{ br.remove }}" aria-label="Remove" style="width:32px;height:32px;border:none;border-radius:50%;background:transparent;font-size:20px;line-height:1;color:#6E5E80;padding:0">×</button>
+</div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;padding:8px 2px 2px;border-top:1px solid #F4EADB;font-size:15px"><span style="color:#6E5E80">Bills each month</span><span style="font-weight:700">{{ obBillsTotal }}</span></div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ obS4 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:22px">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="font-family:'Fredoka',sans-serif;font-size:34px;font-weight:600;letter-spacing:-0.03em;line-height:1.1;text-wrap:pretty">Plan your everyday spending</div>
+<div style="font-size:17px;color:#6E5E80;text-wrap:pretty">{{ obPlanSub }}</div>
+</div>
+<div style="border-radius:20px;padding:16px;background:{{ obPlanBg }};display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">After bills</span><span style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;letter-spacing:-0.02em">{{ obAvail }}</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">Planned</span><span style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;letter-spacing:-0.02em">{{ obPlanned }}</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">{{ obLeftLabel }}</span><span style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;letter-spacing:-0.02em;color:{{ obLeftColor }}">{{ obLeft }}</span></div>
+</div>
+<div style="height:10px;border-radius:999px;background:#FFFFFF;overflow:hidden"><div style="height:100%;border-radius:999px;background:{{ obLeftColor }};width:{{ obPlanPct }}"></div></div>
+</div>
+<div style="background:#FFFFFF;border-radius:22px;padding:6px 16px">
+<sc-for list="{{ obCats }}" as="oc" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:{{ oc.border }}">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ oc.color }};flex-shrink:0"></span>
+<span style="flex:1;font-size:16px;font-weight:600">{{ oc.name }}</span>
+<div style="display:flex;align-items:center;gap:4px;background:#FFF6E9;border-radius:12px;padding:0 12px;width:130px">
+<span style="font-size:15px;color:#6E5E80">{{ obSym }}</span>
+<input value="{{ oc.value }}" onChange="{{ oc.change }}" inputMode="decimal" style="flex:1;min-width:0;border:none;background:transparent;padding:12px 0;font-size:16px;font-weight:600;color:#2A1B3D;outline:none;text-align:right">
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ obS5 }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:24px">
+<div style="display:flex;flex-direction:column;gap:12px">
+<span style="width:56px;height:56px;border-radius:50%;background:#FF4F8B;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:700">✓</span>
+<div style="font-family:'Fredoka',sans-serif;font-size:40px;font-weight:600;letter-spacing:-0.03em;line-height:1.05;margin-top:6px">You’re all set.</div>
+</div>
+<div style="background:#FFFFFF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:600;color:#FF4F8B">Left to spend {{ obUnit }}</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:60px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ obAvail }}</div>
+<div style="font-size:16px;color:#6E5E80;margin-top:4px;text-wrap:pretty">Bills are already set aside. This goes down as you log what you spend.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="font-size:15px;font-weight:700">What’s next</div>
+<sc-for list="{{ obTips }}" as="tp" hint-placeholder-count="3">
+<div style="display:flex;gap:12px;align-items:flex-start"><span style="width:26px;height:26px;border-radius:50%;background:#FFE2EE;color:#FF4F8B;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ tp.n }}</span><span style="font-size:16px;line-height:1.45;padding-top:2px;text-wrap:pretty">{{ tp.text }}</span></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<div style="flex:1"></div>
+<div style="display:flex;flex-direction:column;gap:4px">
+<button onClick="{{ obNext }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ obNextBg }};color:#FFFFFF">{{ obNextLabel }}</button>
+<sc-if value="{{ obCanSkip }}" hint-placeholder-val="{{ false }}"><button onClick="{{ obSkip }}" style="background:none;border:none;padding:12px;font-size:15px;font-weight:700;color:#6E5E80">{{ obSkipLabel }}</button></sc-if>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ toast }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;top:80px;left:50%;transform:translateX(-50%);width:calc(100% - 40px);max-width:400px;z-index:60;background:#2A1B3D;color:#FFFFFF;border-radius:18px;padding:14px 18px;display:flex;flex-direction:column;gap:2px;box-shadow:0 10px 30px rgba(42,27,61,.25)">
+<div style="font-weight:600;font-size:16px">{{ toast.title }}</div>
+<div style="font-size:14px;color:#E6D9F2">{{ toast.sub }}</div>
+</div>
+</sc-if>
+
+<div style="max-width:{{ frameMax }};margin:0 auto;padding:{{ framePad }};background:{{ frameBg }};min-height:calc(100vh - 66px)">
+
+<sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:24px">
+
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px">
+<div style="display:flex;align-items:center;gap:6px">
+<button onClick="{{ prevPeriod }}" aria-label="Previous period" style="width:36px;height:36px;border-radius:50%;border:none;background:#FFFFFF;font-size:18px;font-weight:700;color:#2A1B3D;opacity:{{ prevOp }}">‹</button>
+<div style="font-family:'Fredoka',sans-serif;font-size:20px;font-weight:600;padding:0 6px">{{ periodLabel }}</div>
+<button onClick="{{ nextPeriod }}" aria-label="Next period" style="width:36px;height:36px;border-radius:50%;border:none;background:#FFFFFF;font-size:18px;font-weight:700;color:#2A1B3D;opacity:{{ nextOp }}">›</button>
+<sc-if value="{{ isPast }}" hint-placeholder-val="{{ false }}"><button onClick="{{ backToNow }}" style="margin-left:6px;background:#FFE2EE;color:#FF4F8B;border:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:700">Back to now</button></sc-if>
+</div>
+<div style="font-size:14px;color:#6E5E80">{{ periodMeta }}</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+<div style="flex:1 1 340px;background:#FFFFFF;border-radius:28px;padding:26px 24px 22px;display:flex;flex-direction:column;gap:6px;box-shadow:0 1px 0 #EFE2CE">
+<div style="font-size:16px;font-weight:600;color:{{ heroLabelColor }}">{{ heroLabel }}</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:64px;line-height:1;font-weight:600;letter-spacing:-0.03em;color:#2A1B3D">{{ safeTxt }}</div>
+<div style="font-size:16px;color:#6E5E80;margin-top:4px;text-wrap:pretty">{{ safeSub }}</div>
+<sc-if value="{{ showBreakdownToggle }}" hint-placeholder-val="{{ true }}">
+<button onClick="{{ toggleBreakdown }}" style="align-self:flex-start;margin-top:10px;background:#FFF6E9;border:none;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:#2A1B3D">{{ breakdownLabel }}</button>
+</sc-if>
+<sc-if value="{{ showBreakdown }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:10px;margin-top:12px;padding-top:14px;border-top:1px solid #EFE2CE">
+<sc-for list="{{ breakdown }}" as="row" hint-placeholder-count="5">
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:#6E5E80">{{ row.label }}</span><span style="font-weight:600">{{ row.val }}</span></div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;font-size:15px;padding-top:10px;border-top:1px dashed #EFE2CE"><span style="font-weight:600">{{ heroLabel }}</span><span style="font-weight:700;color:#FF4F8B">{{ safeTxt }}</span></div>
+</div>
+</sc-if>
+</div>
+
+<div style="flex:1 1 340px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px">
+<sc-for list="{{ tiles }}" as="t" hint-placeholder-count="4">
+<button onClick="{{ t.go }}" style="background:{{ t.bg }};border:none;border-radius:22px;padding:16px;display:flex;flex-direction:column;gap:6px;text-align:left;color:#2A1B3D;min-width:0" style-hover="filter:brightness(0.98)">
+<div style="font-size:13px;font-weight:700;letter-spacing:.04em;color:{{ t.labelColor }}">{{ t.label }}</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600;letter-spacing:-0.02em;line-height:1.1">{{ t.value }}</div>
+<div style="width:100%;height:6px;border-radius:999px;background:{{ t.track }};overflow:hidden;margin-top:2px"><div style="height:100%;border-radius:999px;background:{{ t.barColor }};width:{{ t.w }}"></div></div>
+<div style="font-size:13px;color:#6E5E80;text-wrap:pretty">{{ t.sub }}</div>
+</button>
+</sc-for>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">Spending over time</div>
+<div style="font-size:14px;color:#6E5E80">{{ chartSub }}</div>
+</div>
+<div style="display:flex;gap:2px;background:#FFF6E9;border-radius:999px;padding:4px">
+<sc-for list="{{ chartModes }}" as="m" hint-placeholder-count="2">
+<button onClick="{{ m.pick }}" style="border:none;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</button>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+<sc-for list="{{ seriesChips }}" as="sc" hint-placeholder-count="8">
+<button onClick="{{ sc.toggle }}" style="border:1.5px solid {{ sc.ring }};background:{{ sc.bg }};color:{{ sc.color }};border-radius:999px;padding:6px 12px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px;text-decoration:{{ sc.deco }}"><span style="width:8px;height:8px;border-radius:50%;background:{{ sc.dot }}"></span>{{ sc.name }}</button>
+</sc-for>
+<button onClick="{{ seriesAll }}" style="border:none;background:none;padding:6px 6px;font-size:13px;font-weight:700;color:#FF4F8B">All</button>
+<button onClick="{{ seriesNone }}" style="border:none;background:none;padding:6px 6px;font-size:13px;font-weight:700;color:#FF4F8B">None</button>
+</div>
+<div style="position:relative;height:180px;display:flex;align-items:flex-end;gap:{{ chartGap }};border-bottom:1px solid #EFE2CE">
+<div style="position:absolute;left:0;right:0;top:0;border-top:1px dashed #F4EADB"></div>
+<div style="position:absolute;left:0;right:0;top:50%;border-top:1px dashed #F4EADB"></div>
+<sc-if value="{{ chartHasData }}" hint-placeholder-val="{{ true }}">
+<div style="position:absolute;right:0;top:-9px;font-size:11px;color:#6E5E80;background:#FFFFFF;padding-left:4px">{{ chartMaxTxt }}</div>
+<div style="position:absolute;right:0;top:calc(50% - 9px);font-size:11px;color:#6E5E80;background:#FFFFFF;padding-left:4px">{{ chartMidTxt }}</div>
+</sc-if>
+<sc-if value="{{ chartEmpty }}" hint-placeholder-val="{{ false }}">
+<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:1"><span style="background:#FFFFFF;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;color:#6E5E80">Nothing logged yet this period</span></div>
+</sc-if>
+<sc-for list="{{ chartCols }}" as="col" hint-placeholder-count="30">
+<div title="{{ col.title }}" style="position:relative;flex:1;min-width:0;height:100%;display:flex;flex-direction:column-reverse;gap:1px">
+<sc-for list="{{ col.segs }}" as="sg" hint-placeholder-count="1"><div style="height:{{ sg.h }};background:{{ sg.color }};border-radius:3px;flex-shrink:0"></div></sc-for>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:{{ chartGap }};margin-top:-8px">
+<sc-for list="{{ chartCols }}" as="col" hint-placeholder-count="30"><div style="flex:1;min-width:0;font-size:11px;color:#6E5E80;white-space:nowrap;overflow:visible">{{ col.label }}</div></sc-for>
+</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start">
+<div style="flex:1 1 340px;display:flex;flex-direction:column;gap:4px;min-width:0">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;padding:0 4px 8px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">Where it's going</div>
+<div style="font-size:14px;color:#6E5E80">{{ spentTxt }} spent of {{ plannedTxt }} planned</div>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<div style="display:flex;gap:2px;background:#FFFFFF;border-radius:999px;padding:4px">
+<sc-for list="{{ breakdownModes }}" as="m" hint-placeholder-count="2">
+<button onClick="{{ m.pick }}" style="border:none;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700;background:{{ m.bg }};color:{{ m.color }}">{{ m.label }}</button>
+</sc-for>
+</div>
+<button onClick="{{ openBudget }}" style="background:#FFE2EE;color:#FF4F8B;border:none;border-radius:999px;padding:9px 14px;font-size:13px;font-weight:700">Edit budgets</button>
+</div>
+</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-if value="{{ isDonut }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;justify-content:center;padding:22px 0 10px">
+<div style="position:relative;width:200px;height:200px;border-radius:50%;background:{{ donutBg }}">
+<div style="position:absolute;inset:34px;border-radius:50%;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<div style="font-size:13px;color:#6E5E80;font-weight:600">Spent</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:600;letter-spacing:-0.02em">{{ spentTxt }}</div>
+<div style="font-size:13px;color:#6E5E80">of {{ plannedTxt }}</div>
+</div>
+</div>
+</div>
+</sc-if>
+<sc-for list="{{ catRows }}" as="c" hint-placeholder-count="6">
+<div style="border-bottom:{{ c.border }}">
+<button onClick="{{ c.toggle }}" style="width:100%;background:none;border:none;padding:14px 0;display:flex;flex-direction:column;gap:8px;text-align:left;color:#2A1B3D">
+<div style="width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="display:flex;align-items:center;gap:10px;min-width:0"><span style="width:10px;height:10px;border-radius:50%;background:{{ c.color }};flex-shrink:0"></span><span style="font-size:16px;font-weight:600">{{ c.name }}</span><span style="font-size:13px;color:#6E5E80">{{ c.shareTxt }}</span></div>
+<div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span style="font-size:14px;font-weight:600;color:{{ c.leftColor }}">{{ c.leftTxt }}</span><svg width="14" height="14" viewBox="0 0 14 14" style="transform:rotate({{ c.rot }});transition:transform .2s"><path d="M3.5 5.5L7 9l3.5-3.5" fill="none" stroke="#6E5E80" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path></svg></div>
+</div>
+<sc-if value="{{ c.showBar }}" hint-placeholder-val="{{ true }}">
+<div style="position:relative;width:100%;height:8px;border-radius:999px;background:#F4EADB;overflow:hidden">
+<div style="height:100%;border-radius:999px;width:{{ c.w }};background:{{ c.color }}"></div>
+<div style="position:absolute;top:0;right:0;height:100%;width:{{ c.overW }};border-radius:999px 0 0 999px;background:repeating-linear-gradient(-45deg,#E0341B 0 4px,#FF8E7A 4px 8px);box-shadow:-2px 0 0 #FFFFFF"></div>
+</div>
+</sc-if>
+</button>
+<sc-if value="{{ c.open }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFBF4;border-radius:16px;padding:6px 14px;margin-bottom:14px;display:flex;flex-direction:column">
+<div style="font-size:13px;color:#6E5E80;padding:8px 0 4px">{{ c.summary }}</div>
+<sc-for list="{{ c.txns }}" as="t" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid #F4EADB">
+<div style="flex:1;display:flex;flex-direction:column;gap:1px"><div style="font-size:15px;font-weight:600">{{ t.title }}</div><div style="font-size:13px;color:#6E5E80">{{ t.when }}</div></div>
+<div style="font-size:15px;font-weight:600">{{ t.amt }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ c.empty }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6E5E80;padding:10px 0">Nothing spent here in this period.</div></sc-if>
+<button onClick="{{ c.log }}" style="align-self:flex-start;background:none;border:none;padding:12px 0 8px;font-size:14px;font-weight:700;color:#FF4F8B">+ Log in {{ c.name }}</button>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+
+<sc-if value="{{ showRecent }}" hint-placeholder-val="{{ true }}">
+<div style="flex:1 1 300px;display:flex;flex-direction:column;gap:4px;min-width:0">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;padding:0 4px 8px">{{ recentTitle }}</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ recent }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:14px 0;border-bottom:{{ t.border }}">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ t.color }};flex-shrink:0"></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:1px;min-width:0">
+<div style="font-size:16px;font-weight:600">{{ t.title }}</div>
+<div style="font-size:13px;color:#6E5E80">{{ t.meta }}</div>
+</div>
+<div style="font-size:16px;font-weight:600;color:{{ t.amtColor }}">{{ t.amt }}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBills }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px">
+<div style="display:flex;flex-direction:column;gap:4px">
+<div style="font-family:'Fredoka',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Bills &amp; paydays</div>
+<div style="font-size:16px;color:#6E5E80">{{ billsLeftTxt }}</div>
+</div>
+</div>
+<div style="display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start">
+<div style="flex:1.7 1 520px;min-width:0;background:#FFFFFF;border-radius:24px;padding:18px 16px 14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px 20px;padding:0 4px 4px">
+<div style="font-size:15px;font-weight:600">September 2026</div>
+<div style="flex:0 1 300px;display:flex;align-items:center;gap:10px"><div style="flex:1;height:8px;border-radius:999px;background:#F4EADB;overflow:hidden"><div style="height:100%;border-radius:999px;background:#FF4F8B;width:{{ billsPaidPct }}"></div></div><span style="font-size:13px;color:#6E5E80;white-space:nowrap">Paid {{ billsPaidTxt }} of {{ billsTotalTxt }}</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:{{ calGap }}">
+<sc-for list="{{ weekdays }}" as="w" hint-placeholder-count="7"><div style="font-size:12px;font-weight:600;color:#6E5E80;padding:4px 0;text-align:{{ calHeadAlign }}">{{ w }}</div></sc-for>
+<sc-for list="{{ calCells }}" as="d" hint-placeholder-count="35">
+<div style="min-height:{{ d.h }};border-radius:12px;background:{{ d.bg }};padding:{{ d.pad }};display:flex;flex-direction:column;align-items:{{ d.align }};justify-content:{{ d.justify }};gap:4px;min-width:0">
+<span style="width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:{{ d.weight }};background:{{ d.numBg }};color:{{ d.color }};flex-shrink:0">{{ d.label }}</span>
+<sc-for list="{{ d.chips }}" as="bb" hint-placeholder-count="0">
+<div title="{{ bb.title }}" style="width:100%;background:{{ bb.bg }};color:{{ bb.color }};font-size:12px;font-weight:600;border-radius:6px;padding:3px 6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-decoration:{{ bb.deco }}">{{ bb.name }}</div>
+</sc-for>
+<sc-if value="{{ d.showDot }}" hint-placeholder-val="{{ false }}"><span style="width:5px;height:5px;border-radius:50%;background:{{ d.dot }}"></span></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;gap:16px;padding:4px 4px 0;font-size:13px;color:#6E5E80">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#FFEDB8;border:1px solid #FFB400"></span>Due</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#EFE2CE"></span>Paid</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:10px;height:10px;border-radius:3px;background:#D6F6E4;border:1px solid #FF4F8B"></span>Payday</span>
+</div>
+</div>
+<div style="flex:1 1 300px;min-width:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding:0 4px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">Money in</div>
+<div style="font-size:14px;color:#6E5E80">{{ incomeMonthTxt }}/mo</div>
+</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ incomeRows }}" as="ir" hint-placeholder-count="1">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid #F4EADB">
+<span style="width:32px;height:32px;border-radius:50%;background:#FFE2EE;color:#FF4F8B;font-size:18px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">+</span>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px;min-width:0">
+<div style="font-size:16px;font-weight:600">{{ ir.name }}</div>
+<div style="font-size:13px;font-weight:600;color:{{ ir.metaColor }}">{{ ir.meta }}</div>
+</div>
+<div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px">
+<div style="font-size:16px;font-weight:600;color:#FF4F8B">{{ ir.amt }}</div>
+<button onClick="{{ ir.remove }}" style="background:none;border:none;padding:0;font-size:12px;font-weight:600;color:#6E5E80">Remove</button>
+</div>
+</div>
+</sc-for>
+<sc-if value="{{ noIncome }}" hint-placeholder-val="{{ false }}"><div style="padding:16px 0 4px;font-size:15px;color:#6E5E80">No regular income yet. Add your paycheck so we know when money arrives.</div></sc-if>
+<button onClick="{{ openAddIncome }}" style="background:none;border:none;padding:14px 0;font-size:15px;font-weight:700;color:#FF4F8B">+ Add income</button>
+</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;padding:8px 4px 0">Coming up</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ upcomingBills }}" as="b" hint-placeholder-count="3">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:{{ b.border }}">
+<button onClick="{{ b.toggle }}" aria-label="Mark paid" style="width:32px;height:32px;border-radius:50%;border:2px solid {{ b.ring }};background:{{ b.fill }};color:#FFFFFF;font-size:16px;font-weight:700;flex-shrink:0;padding:0">{{ b.check }}</button>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<div style="font-size:16px;font-weight:600">{{ b.name }}</div>
+<div style="font-size:13px;font-weight:600;color:{{ b.whenColor }}">{{ b.when }}</div>
+</div>
+<div style="font-size:16px;font-weight:600">{{ b.amt }}</div>
+</div>
+</sc-for>
+<sc-if value="{{ noUpcoming }}" hint-placeholder-val="{{ false }}"><div style="padding:18px 0;font-size:15px;color:#6E5E80">All paid for this month. Nice.</div></sc-if>
+</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600;padding:8px 4px 0">Paid</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:4px 20px">
+<sc-for list="{{ paidBills }}" as="b" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:14px;padding:14px 0;border-bottom:{{ b.border }}">
+<button onClick="{{ b.toggle }}" aria-label="Mark unpaid" style="width:32px;height:32px;border-radius:50%;border:2px solid {{ b.ring }};background:{{ b.fill }};color:#FFFFFF;font-size:16px;font-weight:700;flex-shrink:0;padding:0">{{ b.check }}</button>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px">
+<div style="font-size:16px;font-weight:600;color:#6E5E80">{{ b.name }}</div>
+<div style="font-size:13px;color:#6E5E80">{{ b.when }}</div>
+</div>
+<div style="font-size:16px;font-weight:600;color:#6E5E80">{{ b.amt }}</div>
+</div>
+</sc-for>
+</div>
+<button onClick="{{ openAddBill }}" style="background:transparent;border:2px dashed #E2D1B8;border-radius:20px;padding:16px;font-size:16px;font-weight:600;color:#2A1B3D">+ Add a bill</button>
+</div>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isDebt }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="font-family:'Fredoka',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Debt</div>
+<sc-if value="{{ noDebts }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFFFFF;border-radius:28px;padding:28px 24px;display:flex;flex-direction:column;gap:8px;max-width:560px">
+<div style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600">No debts added</div>
+<div style="font-size:16px;color:#6E5E80;text-wrap:pretty">Add a credit card, loan or anything you’re paying off. We’ll set the payments aside and show you when you’ll be debt-free.</div>
+</div>
+</sc-if>
+<sc-if value="{{ hasDebts }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:18px">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+<div style="flex:1 1 320px;background:#FFFFFF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:600;color:#6E5E80">Total you owe</div>
+<div style="font-family:'Fredoka',sans-serif;font-size:48px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ debtTotal }}</div>
+<div style="height:10px;border-radius:999px;background:#F4EADB;overflow:hidden;margin-top:14px"><div style="height:100%;border-radius:999px;background:#FF4F8B;width:{{ debtPct }}"></div></div>
+<div style="font-size:14px;color:#6E5E80;margin-top:4px">{{ debtPaidTxt }}</div>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:auto;padding-top:18px;border-top:1px solid #F4EADB">
+<sc-for list="{{ debtStats }}" as="st" hint-placeholder-count="3">
+<div style="display:flex;flex-direction:column;gap:2px;padding-top:4px"><span style="font-size:13px;color:#6E5E80">{{ st.label }}</span><span style="font-size:17px;font-weight:700">{{ st.val }}</span></div>
+</sc-for>
+</div>
+</div>
+<div style="flex:1.6 1 420px;min-width:0;background:#FFFFFF;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:8px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">Your path to debt-free</div>
+<div style="display:flex;gap:14px;font-size:13px;color:#6E5E80">
+<span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:3px;border-radius:2px;background:#FF4F8B"></span>Your plan</span>
+<span style="display:flex;align-items:center;gap:6px"><span style="width:16px;height:0;border-top:2px dashed #A898B5"></span>Minimums only</span>
+</div>
+</div>
+<div style="position:relative;height:200px;border-bottom:1px solid #EFE2CE">
+<div style="position:absolute;left:0;top:-4px;font-size:11px;color:#6E5E80">{{ debtMaxTxt }}</div>
+<svg viewBox="0 0 600 200" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">
+<path d="{{ planArea }}" fill="#FFE2EE"></path>
+<path d="{{ baseLine }}" fill="none" stroke="#A898B5" stroke-width="2" stroke-dasharray="5 5" vector-effect="non-scaling-stroke"></path>
+<path d="{{ planLine }}" fill="none" stroke="#FF4F8B" stroke-width="3" vector-effect="non-scaling-stroke" stroke-linejoin="round"></path>
+</svg>
+<sc-for list="{{ debtDots }}" as="dd" hint-placeholder-count="0">
+<div title="{{ dd.title }}" style="position:absolute;left:{{ dd.left }};top:{{ dd.top }};transform:translate(-50%,-50%);width:14px;height:14px;border-radius:50%;background:#FFFFFF;border:3px solid #FF4F8B"></div>
+</sc-for>
+</div>
+<div style="position:relative;height:16px;margin-top:-6px">
+<sc-for list="{{ debtYears }}" as="yr" hint-placeholder-count="4"><span style="position:absolute;left:{{ yr.left }};transform:translateX(-50%);font-size:11px;color:#6E5E80">{{ yr.label }}</span></sc-for>
+</div>
+<div style="font-size:13px;color:#6E5E80">Circles mark when each debt is paid off on your plan.</div>
+</div>
+</div>
+
+<div style="background:#FFFFFF;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:10px">
+<div style="display:flex;flex-direction:column;gap:2px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">Your payoff plan</div>
+<div style="font-size:14px;color:#6E5E80">Pick how extra money gets shared out between your debts.</div>
+</div>
+<button onClick="{{ toggleHow }}" style="background:#FFF6E9;border:none;border-radius:999px;padding:9px 14px;font-size:14px;font-weight:600;color:#2A1B3D">{{ howLabel }}</button>
+</div>
+<sc-if value="{{ showHow }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFF6E9;border-radius:20px;padding:18px 20px;display:flex;flex-direction:column;gap:12px">
+<sc-for list="{{ howSteps }}" as="hs" hint-placeholder-count="4">
+<div style="display:flex;gap:12px;align-items:flex-start">
+<span style="width:26px;height:26px;border-radius:50%;background:#FF4F8B;color:#FFFFFF;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">{{ hs.n }}</span>
+<span style="font-size:15px;line-height:1.45;padding-top:3px;text-wrap:pretty">{{ hs.text }}</span>
+</div>
+</sc-for>
+<div style="font-size:14px;font-weight:600;color:#FF4F8B;padding-left:38px">{{ howWhy }}</div>
+</div>
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+<sc-for list="{{ stratOpts }}" as="so" hint-placeholder-count="3">
+<button onClick="{{ so.pick }}" style="display:flex;flex-direction:column;gap:6px;text-align:left;border:2px solid {{ so.ring }};background:{{ so.bg }};border-radius:20px;padding:16px;color:#2A1B3D">
+<span style="display:flex;align-items:center;gap:10px"><span style="width:20px;height:20px;border-radius:50%;border:2px solid {{ so.dotRing }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:10px;height:10px;border-radius:50%;background:{{ so.dot }}"></span></span><span style="font-size:17px;font-weight:700">{{ so.name }}</span></span>
+<span style="font-size:14px;color:#6E5E80;text-wrap:pretty">{{ so.desc }}</span>
+<span style="font-size:13px;font-weight:700;color:#FF4F8B">{{ so.result }}</span>
+</button>
+</sc-for>
+</div>
+<sc-if value="{{ extraEnabled }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-wrap:wrap;gap:16px;align-items:stretch">
+<div style="flex:1 1 280px;display:flex;flex-direction:column;gap:10px;padding:4px 0">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:15px;font-weight:600">Extra each month</span><span style="font-family:'Fredoka',sans-serif;font-size:28px;font-weight:600">{{ extraTxt }}</span></div>
+<input type="range" min="0" max="1000" step="10" value="{{ extraVal }}" onChange="{{ setExtra }}" style="width:100%;accent-color:#FF4F8B;height:24px">
+<div style="display:flex;justify-content:space-between;font-size:12px;color:#6E5E80"><span>{{ sl0 }}</span><span>{{ sl500 }}</span><span>{{ sl1000 }}</span></div>
+</div>
+<div style="flex:1 1 280px;background:#FFE2EE;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:4px;justify-content:center">
+<div style="font-size:18px;font-weight:700;color:#2A1B3D;text-wrap:pretty">{{ extraResult }}</div>
+<div style="font-size:13px;color:#9C1F52;text-wrap:pretty">{{ extraResultSub }}</div>
+</div>
+</div>
+</sc-if>
+<sc-if value="{{ extraDisabled }}" hint-placeholder-val="{{ false }}">
+<div style="background:#FFF6E9;border-radius:16px;padding:14px 16px;font-size:14px;color:#6E5E80">Pick Snowball or Avalanche to add extra money and see how much sooner you'd be done.</div>
+</sc-if>
+</div>
+
+</div>
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+<sc-for list="{{ debtRows }}" as="d" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px;opacity:{{ d.op }}">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+<span style="font-size:12px;font-weight:700;letter-spacing:.03em;border-radius:999px;padding:5px 10px;background:{{ d.badgeBg }};color:{{ d.badgeColor }}">{{ d.badge }}</span>
+<span style="font-size:13px;color:#6E5E80">{{ d.freeBy }}</span>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+<div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:17px;font-weight:600">{{ d.name }}</div><div style="font-size:14px;color:#6E5E80">{{ d.meta }}</div></div>
+<div style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600">{{ d.bal }}</div>
+</div>
+<div style="height:8px;border-radius:999px;background:#F4EADB;overflow:hidden"><div style="height:100%;border-radius:999px;background:#FF4F8B;width:{{ d.w }}"></div></div>
+<div style="font-size:13px;color:#6E5E80">{{ d.interestTxt }}</div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:4px;border-top:1px solid #F4EADB">
+<button onClick="{{ d.toggleSkip }}" style="display:flex;align-items:center;gap:8px;background:none;border:none;padding:8px 0;font-size:14px;font-weight:600;color:#2A1B3D">
+<span style="width:36px;height:20px;border-radius:999px;background:{{ d.trackBg }};display:flex;justify-content:{{ d.knob }};padding:2px"><span style="width:16px;height:16px;border-radius:50%;background:#FFFFFF"></span></span>{{ d.inPlanTxt }}</button>
+<button onClick="{{ d.pay }}" style="background:#FFE2EE;color:#FF4F8B;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;flex-shrink:0">Log payment</button>
+</div>
+</div>
+</sc-for>
+<button onClick="{{ openAddDebt }}" style="background:transparent;border:2px dashed #E2D1B8;border-radius:24px;padding:20px;min-height:72px;font-size:16px;font-weight:600;color:#2A1B3D">+ Add a debt</button>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ isGoals }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:18px;padding-top:28px">
+<div style="font-family:'Fredoka',sans-serif;font-size:32px;font-weight:600;letter-spacing:-0.02em">Goals</div>
+<div style="background:#FFFFFF;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:6px">
+<div style="font-size:16px;font-weight:600;color:#6E5E80">Total saved</div>
+<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font-family:'Fredoka',sans-serif;font-size:48px;line-height:1;font-weight:600;letter-spacing:-0.03em">{{ goalsSaved }}</span><span style="font-size:17px;color:#6E5E80">of {{ goalsTarget }}</span></div>
+<div style="height:10px;border-radius:999px;background:#F4EADB;overflow:hidden;margin-top:14px"><div style="height:100%;border-radius:999px;background:#FF4F8B;width:{{ goalsPct }}"></div></div>
+<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;font-size:14px;color:#6E5E80;margin-top:4px"><span>{{ goalsPctTxt }}</span><span>{{ goalsSub }}</span></div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">
+<sc-for list="{{ goalRows }}" as="g" hint-placeholder-count="3">
+<div style="background:#FFFFFF;border-radius:24px;padding:20px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">
+<div style="font-size:17px;font-weight:600">{{ g.name }}</div>
+<div style="font-size:14px;font-weight:700;color:#FF4F8B">{{ g.pctTxt }}</div>
+</div>
+<div style="display:flex;align-items:baseline;gap:6px"><span style="font-family:'Fredoka',sans-serif;font-size:30px;font-weight:600;letter-spacing:-0.02em">{{ g.saved }}</span><span style="font-size:15px;color:#6E5E80">of {{ g.target }}</span></div>
+<div style="height:10px;border-radius:999px;background:#F4EADB;overflow:hidden"><div style="height:100%;border-radius:999px;background:#FF4F8B;width:{{ g.w }}"></div></div>
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+<div style="font-size:14px;color:#6E5E80">{{ g.byTxt }}</div>
+<button onClick="{{ g.add }}" style="background:#FFE2EE;color:#FF4F8B;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;flex-shrink:0">Add money</button>
+</div>
+</div>
+</sc-for>
+<button onClick="{{ openAddGoal }}" style="background:transparent;border:2px dashed #E2D1B8;border-radius:24px;padding:20px;min-height:72px;font-size:16px;font-weight:600;color:#2A1B3D">+ Add a saving goal</button>
+</div>
+</div>
+</sc-if>
+
+</div>
+
+<sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:440px;z-index:30;padding:0 16px 16px;pointer-events:none">
+<div style="display:flex;justify-content:flex-end;padding-bottom:12px">
+<button onClick="{{ openLog }}" style="pointer-events:auto;background:#FF4F8B;color:#FFFFFF;border:none;border-radius:999px;padding:16px 24px;font-size:17px;font-weight:700;box-shadow:0 8px 24px rgba(255,79,139,.35);display:flex;align-items:center;gap:8px"><span style="font-size:22px;line-height:1;font-weight:500">+</span>Log spending</button>
+</div>
+<div style="pointer-events:auto;background:#FFFFFF;border-radius:24px;padding:6px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;box-shadow:0 6px 24px rgba(42,27,61,.10)">
+<sc-for list="{{ nav }}" as="n" hint-placeholder-count="4">
+<button onClick="{{ n.go }}" style="border:none;border-radius:18px;padding:14px 0;font-size:15px;font-weight:700;background:{{ n.bg }};color:{{ n.color }}">{{ n.label }}</button>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{ sheetOpen }}" hint-placeholder-val="{{ false }}">
+<div style="position:fixed;inset:0;z-index:50;display:flex;justify-content:center;align-items:{{ sheetAlign }};padding:{{ sheetOuterPad }}">
+<div onClick="{{ closeSheet }}" style="position:absolute;inset:0;background:rgba(42,27,61,.4)"></div>
+<div style="position:relative;width:100%;max-width:{{ sheetMax }};max-height:92vh;overflow:auto;background:#FFFFFF;border-radius:{{ sheetRadius }};padding:14px 20px 24px;display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ isMobile }}" hint-placeholder-val="{{ false }}"><div style="width:40px;height:5px;border-radius:999px;background:#EFE2CE;align-self:center"></div></sc-if>
+<div style="display:flex;justify-content:space-between;align-items:center;padding-top:6px">
+<div style="font-family:'Fredoka',sans-serif;font-size:22px;font-weight:600">{{ sheetTitle }}</div>
+<button onClick="{{ closeSheet }}" style="background:#FFF6E9;border:none;border-radius:999px;padding:8px 14px;font-size:14px;font-weight:600;color:#2A1B3D">Cancel</button>
+</div>
+
+<sc-if value="{{ isKeypad }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;flex-direction:column;gap:16px">
+<sc-if value="{{ isSpend }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#FFF6E9;border-radius:999px;padding:4px">
+<sc-for list="{{ logTypes }}" as="lt" hint-placeholder-count="2"><button onClick="{{ lt.pick }}" style="border:none;border-radius:999px;padding:10px;font-size:15px;font-weight:700;background:{{ lt.bg }};color:{{ lt.color }};box-shadow:{{ lt.shadow }}">{{ lt.label }}</button></sc-for>
+</div>
+</sc-if>
+<div style="text-align:center;font-family:'Fredoka',sans-serif;font-size:56px;font-weight:600;letter-spacing:-0.03em;color:{{ amtColor }};padding:6px 0">{{ amtDisplay }}</div>
+<sc-if value="{{ isSpend }}" hint-placeholder-val="{{ true }}">
+<sc-if value="{{ isSpendCats }}" hint-placeholder-val="{{ true }}">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ catChips }}" as="c" hint-placeholder-count="6">
+<button onClick="{{ c.pick }}" style="border-radius:16px;padding:12px 6px;font-size:14px;font-weight:600;border:2px solid {{ c.ring }};background:{{ c.bg }};color:#2A1B3D;display:flex;align-items:center;justify-content:center;gap:6px"><span style="width:8px;height:8px;border-radius:50%;background:{{ c.color }};flex-shrink:0"></span>{{ c.name }}</button>
+</sc-for>
+</div>
+</sc-if>
+<input value="{{ note }}" onChange="{{ setNote }}" placeholder="{{ notePh }}" style="border:none;background:#FFF6E9;border-radius:14px;padding:14px 16px;font-size:16px;color:#2A1B3D;outline:none">
+</sc-if>
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<sc-for list="{{ keys }}" as="k" hint-placeholder-count="12">
+<button onClick="{{ k.press }}" style="height:56px;border:none;border-radius:16px;background:#FFF6E9;font-size:24px;font-weight:600;color:#2A1B3D;font-family:'Fredoka',sans-serif">{{ k.label }}</button>
+</sc-for>
+</div>
+<button onClick="{{ save }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ saveBg }};color:#FFFFFF">{{ saveLabel }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isForm }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<sc-for list="{{ formFields }}" as="fl" hint-placeholder-count="3">
+<div style="grid-column:{{ fl.span }};display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">{{ fl.label }}
+<sc-if value="{{ fl.isInput }}" hint-placeholder-val="{{ true }}"><input type="{{ fl.type }}" value="{{ fl.value }}" onChange="{{ fl.change }}" inputMode="{{ fl.mode }}" placeholder="{{ fl.ph }}" style="border:none;background:#FFF6E9;border-radius:14px;padding:14px 16px;font-size:17px;color:#2A1B3D;outline:none;width:100%"></sc-if>
+<sc-if value="{{ fl.isChoice }}" hint-placeholder-val="{{ false }}"><div style="display:flex;flex-wrap:wrap;gap:6px"><sc-for list="{{ fl.opts }}" as="op" hint-placeholder-count="3"><button onClick="{{ op.pick }}" style="border:none;border-radius:999px;padding:11px 16px;font-size:15px;font-weight:700;background:{{ op.bg }};color:{{ op.color }}">{{ op.label }}</button></sc-for></div></sc-if>
+</div>
+</sc-for>
+</div>
+<div style="font-size:14px;color:#6E5E80;text-wrap:pretty">{{ formNote }}</div>
+<button onClick="{{ saveForm }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ formSaveBg }};color:#FFFFFF;margin-top:4px">{{ formBtn }}</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isBudget }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px;background:#FFF6E9;border-radius:18px;padding:14px 16px">
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600;color:#6E5E80">Money coming in {{ perUnit }}</span><span style="font-family:'Fredoka',sans-serif;font-size:24px;font-weight:600">{{ bIncomeTxt }}</span><span style="font-size:12px;color:#6E5E80">{{ bIncomeSub }}</span></div>
+<button onClick="{{ openAddIncome }}" style="background:#FFFFFF;color:#FF4F8B;border:none;border-radius:999px;padding:10px 14px;font-size:14px;font-weight:700;flex-shrink:0">+ Add income</button>
+</div>
+<div style="border-radius:18px;padding:16px;background:{{ planBg }};display:flex;flex-direction:column;gap:12px">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">Available</span><span style="font-family:'Fredoka',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.02em">{{ planAvail }}</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">Planned</span><span style="font-family:'Fredoka',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.02em">{{ planTotal }}</span></div>
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#6E5E80">{{ planLeftLabel }}</span><span style="font-family:'Fredoka',sans-serif;font-size:26px;font-weight:600;letter-spacing:-0.02em;color:{{ planLeftColor }}">{{ planLeft }}</span></div>
+</div>
+<div style="height:10px;border-radius:999px;background:#FFFFFF;overflow:hidden"><div style="height:100%;border-radius:999px;background:{{ planBarColor }};width:{{ planPct }}"></div></div>
+<div style="font-size:14px;font-weight:600;color:{{ planMsgColor }}">{{ planMsg }}</div>
+<div style="font-size:12px;color:#6E5E80">Available = money coming in minus bills, debt and savings.</div>
+</div>
+<div style="font-size:14px;font-weight:600;color:#6E5E80;padding-top:4px">Spending plan {{ perUnit }}</div>
+<div style="display:flex;flex-direction:column;background:#FFF6E9;border-radius:18px;padding:4px 16px">
+<sc-for list="{{ budgetRows }}" as="br" hint-placeholder-count="6">
+<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:{{ br.border }}">
+<span style="width:10px;height:10px;border-radius:50%;background:{{ br.color }};flex-shrink:0"></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:1px"><span style="font-size:16px;font-weight:600">{{ br.name }}</span><span style="font-size:12px;color:#6E5E80">{{ br.hint }}</span></div>
+<div style="display:flex;align-items:center;background:#FFFFFF;border-radius:12px;padding:0 12px;width:120px"><span style="font-size:16px;color:#6E5E80">$</span><input value="{{ br.value }}" onChange="{{ br.change }}" inputMode="decimal" style="border:none;background:transparent;padding:11px 6px;font-size:16px;font-weight:600;color:#2A1B3D;outline:none;width:100%;text-align:right"></div>
+</div>
+</sc-for>
+</div>
+<button onClick="{{ saveBudget }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:#FF4F8B;color:#FFFFFF">Save budget</button>
+</div>
+</sc-if>
+
+<sc-if value="{{ isSettings }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">Currency
+<select value="{{ sCurrency }}" onChange="{{ setSCurrency }}" style="border:none;background:#FFF6E9;border-radius:14px;padding:14px 16px;font-size:16px;font-weight:600;color:#2A1B3D;outline:none;width:100%;font-family:inherit">
+<sc-for list="{{ currencyOpts }}" as="co" hint-placeholder-count="4"><option value="{{ co.code }}">{{ co.label }}</option></sc-for>
+</select>
+</label>
+<div style="font-size:14px;font-weight:600;color:#6E5E80;padding-top:6px">Budget period</div>
+<sc-for list="{{ periodOpts }}" as="po" hint-placeholder-count="4">
+<button onClick="{{ po.pick }}" style="display:flex;align-items:center;gap:14px;text-align:left;border:2px solid {{ po.ring }};background:{{ po.bg }};border-radius:18px;padding:14px 16px;color:#2A1B3D">
+<span style="width:20px;height:20px;border-radius:50%;border:2px solid {{ po.dotRing }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><span style="width:10px;height:10px;border-radius:50%;background:{{ po.dot }}"></span></span>
+<span style="display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">{{ po.name }}</span><span style="font-size:13px;color:#6E5E80">{{ po.sub }}</span></span>
+</button>
+</sc-for>
+<sc-if value="{{ isCustomSel }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">Starts on<input type="date" value="{{ sStart }}" onChange="{{ setSStart }}" style="border:none;background:#FFF6E9;border-radius:14px;padding:13px 14px;font-size:16px;color:#2A1B3D;outline:none;width:100%"></label>
+<label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600;color:#6E5E80">Length in days<input value="{{ sLen }}" onChange="{{ setSLen }}" inputMode="numeric" placeholder="e.g. 10" style="border:none;background:#FFF6E9;border-radius:14px;padding:13px 14px;font-size:16px;color:#2A1B3D;outline:none;width:100%"></label>
+</div>
+</sc-if>
+<div style="font-size:14px;color:#6E5E80;text-wrap:pretty">Your monthly income, bills, debt and savings get split evenly across each period, so the number stays steady.</div>
+<button onClick="{{ saveSettings }}" style="border:none;border-radius:18px;padding:18px;font-size:17px;font-weight:700;background:{{ settingsSaveBg }};color:#FFFFFF">Save</button>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid #F4EADB">
+<div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Run setup again</span><span style="font-size:13px;color:#6E5E80">Walk through income, bills and your plan. Your spending, debts and goals stay.</span></div>
+<button onClick="{{ rerunSetup }}" style="background:#FFE2EE;color:#FF4F8B;border:none;border-radius:999px;padding:10px 16px;font-size:14px;font-weight:700;flex-shrink:0">Start</button>
+</div>
+</div>
+</sc-if>
+</div>
+</div>
+</sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showDaily&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;calmMode&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Home&quot;},&quot;hideCents&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Numbers&quot;}}">
+const DAYMS = 86400000;
+const dn = (y, m, d) => Math.floor(Date.UTC(y, m - 1, d) / DAYMS);
+const dt = n => new Date(n * DAYMS);
+const TODAY = dn(2026, 9, 25), HIST = dn(2026, 3, 1), KEY = 'steady.theme.fun';
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const MONTHS_L = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const WD = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const fmtD = n => { const d = dt(n); return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCDate(); };
+const CATS = [
+  { id: 'groceries', name: 'Groceries', color: '#22B573' },
+  { id: 'eating', name: 'Eating out', color: '#FFB400' },
+  { id: 'transport', name: 'Transport', color: '#3D8BFF' },
+  { id: 'fun', name: 'Fun', color: '#9B5CFF' },
+  { id: 'shopping', name: 'Shopping', color: '#FF5FA2' },
+  { id: 'other', name: 'Other', color: '#A79CB5' }
+];
+const SERIES = CATS.concat([{ id: 'rent', name: 'Rent', color: '#00B3C7' }, { id: 'bills', name: 'Other bills', color: '#FF8A3D' }]);
+const GEN = {
+  groceries: [.28, 12, 70, ['Corner market', 'Big shop', 'Farmers market', 'Bakery', 'Top-up shop']],
+  eating: [.16, 9, 40, ['Lunch', 'Coffee', 'Takeout', 'Pizza night', 'Brunch']],
+  transport: [.09, 20, 65, ['Gas', 'Bus pass', 'Parking', 'Rideshare']],
+  fun: [.07, 8, 55, ['Movie', 'Concert', 'Games', 'Bowling']],
+  shopping: [.05, 15, 90, ['Clothes', 'Shoes', 'Home stuff', 'Books']],
+  other: [.06, 6, 45, ['Pharmacy', 'Haircut', 'Gift', 'Pet supplies']]
+};
+const FORMS = {
+  bill: { title: 'New bill', btn: 'Add bill', note: 'It repeats every month. We\'ll set the money aside automatically.', fields: [
+    { k: 'name', label: 'What\'s the bill?', ph: 'e.g. Water', full: true, req: true },
+    { k: 'amount', label: 'How much?', ph: '$0', num: true, req: true },
+    { k: 'day', label: 'Due on day', ph: '1–31', int: true, req: true }] },
+  debt: { title: 'New debt', btn: 'Add debt', note: 'We\'ll set the monthly payment aside before showing what\'s left to spend.', fields: [
+    { k: 'name', label: 'What\'s it called?', ph: 'e.g. Store card', full: true, req: true },
+    { k: 'balance', label: 'How much you owe', ph: '$0', num: true, req: true },
+    { k: 'min', label: 'Monthly payment', ph: '$0', num: true, req: true },
+    { k: 'rate', label: 'Interest rate % (optional)', ph: 'e.g. 19.9', num: true, full: true }] },
+  goal: { title: 'New saving goal', btn: 'Add goal', note: 'We\'ll set the monthly amount aside before showing what\'s left to spend.', fields: [
+    { k: 'name', label: 'What are you saving for?', ph: 'e.g. Holiday gifts', full: true, req: true },
+    { k: 'target', label: 'How much you need', ph: '$0', num: true, req: true },
+    { k: 'monthly', label: 'Save each month', ph: '$0', num: true, req: true },
+    { k: 'saved', label: 'Already saved (optional)', ph: '$0', num: true, full: true }] }
+};
+const FREQ = { weekly: { mult: 52 / 12, len: 7, label: 'Weekly' }, biweekly: { mult: 26 / 12, len: 14, label: 'Every 2 weeks' }, monthly: { mult: 1, label: 'Monthly' } };
+FORMS.income = { title: 'New income', btn: 'Add income', note: 'Regular pay is spread evenly across your budget periods, so your left to spend stays steady. Got a one-off payment? Use Log → Income instead.', fields: [
+  { k: 'name', label: 'What is it?', ph: 'e.g. Paycheck, side gig', full: true, req: true },
+  { k: 'amount', label: 'Amount each time', ph: '$0', num: true, req: true },
+  { k: 'next', label: 'Next payday', date: true, req: true },
+  { k: 'freq', label: 'How often?', full: true, req: true, choice: [['weekly', 'Weekly'], ['biweekly', 'Every 2 weeks'], ['monthly', 'Monthly']] }] };
+const CUR = [
+  ['USD', '$', 'US dollar'], ['EUR', '€', 'Euro'], ['GBP', '£', 'British pound'], ['CAD', '$', 'Canadian dollar'],
+  ['AUD', '$', 'Australian dollar'], ['NZD', '$', 'NZ dollar'], ['INR', '₹', 'Indian rupee'], ['JPY', '¥', 'Japanese yen', 0],
+  ['CHF', 'CHF ', 'Swiss franc'], ['SEK', 'kr', 'Swedish krona', 2, 1], ['NOK', 'kr', 'Norwegian krone', 2, 1], ['PLN', 'zł', 'Polish złoty', 2, 1],
+  ['ZAR', 'R', 'South African rand'], ['BRL', 'R$', 'Brazilian real'], ['MXN', '$', 'Mexican peso'], ['SGD', '$', 'Singapore dollar']
+].map(([code, sym, name, dec, after]) => ({ code, sym, name, dec: dec ?? 2, after: !!after }));
+const DEF_BUD = { groceries: 350, eating: 120, transport: 120, fun: 80, shopping: 80, other: 60 };
+const SUG_BILLS = ['Rent', 'Phone', 'Internet', 'Electric', 'Water', 'Car insurance', 'Streaming', 'Gym'];
+function obFresh() { return { step: 0, fresh: true, currency: 'USD', incAmt: '', incFreq: 'biweekly', incNext: isoOf(TODAY + 7), period: null, cStart: isoOf(TODAY), cLen: '10', bills: [], budRaw: null }; }
+const PERIOD_OPTS = [
+  { id: 'monthly', name: 'Monthly', sub: 'The 1st to the end of each month' },
+  { id: 'biweekly', name: 'Every 2 weeks', sub: 'Lines up with a biweekly paycheck' },
+  { id: 'weekly', name: 'Weekly', sub: 'Monday to Sunday' },
+  { id: 'custom', name: 'Custom', sub: 'Pick your own start date and length' }
+];
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function genTxns() {
+  const r = rng(7), out = []; let i = 0;
+  const BUD = { groceries: 350, eating: 120, transport: 120, fun: 80, shopping: 80, other: 60 };
+  for (let m = 3; m <= 9; m++) {
+    const start = dn(2026, m, 1), dim = new Date(Date.UTC(2026, m, 0)).getUTCDate(), last = Math.min(start + dim - 1, TODAY - 1);
+    const elapsed = (last - start + 1) / dim;
+    for (const c of CATS) {
+      const [, lo, hi, pool] = GEN[c.id];
+      const mult = m === 9 ? (c.id === 'eating' ? 0.95 : 0.55 + r() * 0.25) : 0.72 + r() * 0.38;
+      const target = BUD[c.id] * mult * elapsed, avg = (lo + hi) / 2;
+      const cnt = Math.max(1, Math.round(target / avg));
+      const raw = []; for (let k = 0; k < cnt; k++) raw.push(0.6 + r() * 0.8);
+      const sum = raw.reduce((a, b) => a + b, 0);
+      raw.forEach(w => out.push({ id: 'h' + (i++), amt: Math.max(3, Math.round(target * w / sum)), cat: c.id, note: r() < 0.75 ? pool[Math.floor(r() * pool.length)] : '', d: start + Math.floor(r() * (last - start + 1)) }));
+    }
+  }
+  out.push({ id: 'hx', amt: 48, cat: 'eating', note: 'Birthday dinner', d: dn(2026, 9, 20) });
+  out.push({ id: 'hy', amt: 14, cat: 'groceries', note: 'Corner market', d: TODAY });
+  return out;
+}
+function seed() {
+  const bills = [
+    { id: 'b1', name: 'Rent', amount: 1200, day: 1, group: 'rent' },
+    { id: 'b2', name: 'Phone', amount: 55, day: 5 }, { id: 'b3', name: 'Internet', amount: 60, day: 12 },
+    { id: 'b4', name: 'Car insurance', amount: 110, day: 18 }, { id: 'b5', name: 'Electric', amount: 85, day: 26 },
+    { id: 'b6', name: 'Streaming', amount: 11, day: 28 }, { id: 'b7', name: 'Gym', amount: 30, day: 30 }
+  ];
+  return {
+    incomes: [{ id: 'i1', name: 'Paycheck', amount: 1477, freq: 'biweekly', anchor: dn(2026, 9, 18) }], incomeTxns: [],
+    budgets: { groceries: 350, eating: 120, transport: 120, fun: 80, shopping: 80, other: 60 },
+    bills, paidKeys: bills.filter(b => b.day < 25).map(b => b.id + ':2026-9'),
+    debts: [
+      { id: 'd1', name: 'Credit card', balance: 2400, original: 3100, min: 75, rate: 22.9 },
+      { id: 'd2', name: 'Car loan', balance: 8200, original: 14000, min: 240, rate: 6.5 },
+      { id: 'd3', name: 'Student loan', balance: 14500, original: 21000, min: 160, rate: 5 }
+    ],
+    goals: [
+      { id: 'g1', name: 'Emergency fund', saved: 1000, target: 3000, monthly: 150 },
+      { id: 'g2', name: 'Summer trip', saved: 420, target: 1200, monthly: 100 },
+      { id: 'g3', name: 'New laptop', saved: 300, target: 900, monthly: 50 }
+    ],
+    txns: genTxns(),
+    currency: 'USD', onboarded: true,
+    periodType: 'monthly', customStart: dn(2026, 9, 20), customLen: 10,
+    excluded: ['rent'], chartMode: 'day', catView: 'bars', debtStrategy: 'avalanche', debtExtra: 100, showHowDebt: false
+  };
+}
+function payoffMonths(bal, rate, pay) { let m = 0; while (bal > 0 && m < 600) { bal = bal * (1 + rate / 1200) - pay; m++; } return m; }
+function monthLabel(add) { const d = new Date(Date.UTC(2026, 8 + add, 1)); return MONTHS[d.getUTCMonth()] + ' ' + d.getUTCFullYear(); }
+function isoOf(n) { const d = dt(n); return d.getUTCFullYear() + '-' + String(d.getUTCMonth() + 1).padStart(2, '0') + '-' + String(d.getUTCDate()).padStart(2, '0'); }
+
+function simDebts(debts, strat, extra) {
+  const ds = debts.filter(d => d.balance > 0).map(d => ({ id: d.id, name: d.name, bal: d.balance, rate: d.rate || 0, min: d.min, inc: strat !== 'min', roll: strat !== 'min' && !d.skip, paidAt: null, interest: 0 }));
+  const order = ds.filter(d => d.inc).sort(strat === 'snowball' ? (a, b) => a.bal - b.bal : (a, b) => b.rate - a.rate || a.bal - b.bal);
+  const series = [ds.reduce((a, d) => a + d.bal, 0)]; let m = 0, total = 0;
+  const ex = strat === 'min' ? 0 : extra;
+  while (ds.some(d => d.bal > 0.005) && m < 600) {
+    m++; let pool = ex;
+    ds.forEach(d => {
+      if (d.bal <= 0.005) { if (d.roll) pool += d.min; return; }
+      const i = d.bal * d.rate / 1200; d.bal += i; d.interest += i; total += i;
+      const p = Math.min(d.min, d.bal); d.bal -= p; if (d.inc) pool += d.min - p;
+    });
+    for (const d of order) { if (pool <= 0) break; if (d.bal <= 0.005) continue; const p = Math.min(pool, d.bal); d.bal -= p; pool -= p; }
+    ds.forEach(d => { if (d.bal <= 0.005 && d.paidAt === null) { d.bal = 0; d.paidAt = m; } });
+    series.push(ds.reduce((a, d) => a + Math.max(0, d.bal), 0));
+  }
+  return { months: m, interest: total, series, debts: ds, order, stuck: m >= 600 };
+}
+function spanTxt(m) { const y = Math.floor(m / 12), mo = m % 12; return [y ? y + (y === 1 ? ' year' : ' years') : '', mo ? mo + (mo === 1 ? ' month' : ' months') : ''].filter(Boolean).join(' '); }
+
+class Component extends DCLogic {
+  state = (() => {
+    let saved = null;
+    try { saved = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+    if (saved && saved.seedVer !== 5) saved = null;
+    return Object.assign({ tab: 'home', view: 'web' }, seed(), saved || {}, { seedVer: 5 }, {
+      ob: !saved || saved.onboarded ? null : obFresh(), sheet: null, entry: '', note: '', selCat: 'groceries', toast: null, showBreakdown: false, openCat: null, form: {}, offset: 0
+    });
+  })();
+
+  componentDidUpdate() {
+    const s = this.state, keep = {};
+    ['seedVer', 'currency', 'onboarded', 'tab', 'view', 'incomes', 'incomeTxns', 'budgets', 'bills', 'paidKeys', 'debts', 'goals', 'txns', 'periodType', 'customStart', 'customLen', 'excluded', 'chartMode', 'catView', 'debtStrategy', 'debtExtra', 'showHowDebt'].forEach(k => keep[k] = s[k]);
+    try { localStorage.setItem(KEY, JSON.stringify(keep)); } catch (e) {}
+  }
+  componentWillUnmount() { clearTimeout(this._t); }
+
+  cur(code) { return CUR.find(c => c.code === (code || this.state.currency)) || CUR[0]; }
+  fmtWith(cur, n) {
+    const hide = cur.dec === 0 || (this.props.hideCents ?? true);
+    const neg = n < 0; n = Math.abs(n);
+    const s = n.toLocaleString('en-US', { minimumFractionDigits: hide ? 0 : 2, maximumFractionDigits: hide ? 0 : 2 });
+    return (neg ? '−' : '') + (cur.after ? s + ' ' + cur.sym : cur.sym + s);
+  }
+  fmt(n) { return this.fmtWith(this.cur(), n); }
+  obInit() {
+    const s = this.state, inc = s.incomes[0], pf = this.period(0).f, budRaw = {};
+    CATS.forEach(c => budRaw[c.id] = String(Math.round((s.budgets[c.id] || 0) * pf)));
+    const np = inc ? this.payOcc(inc, TODAY, TODAY + 400)[0] : null;
+    return { step: 1, fresh: false, currency: s.currency, incAmt: inc ? String(inc.amount) : '', incFreq: inc ? inc.freq : 'biweekly', incNext: isoOf(np != null ? np : TODAY + 7),
+      period: s.periodType, cStart: isoOf(s.customStart), cLen: String(s.customLen), bills: s.bills.map(b => ({ id: b.id, name: b.name, amount: String(b.amount), day: String(b.day) })), budRaw };
+  }
+  obPer(o) { return o.period || o.incFreq || 'monthly'; }
+  obPf(o) { const p = this.obPer(o); return p === 'monthly' ? 1 : p === 'weekly' ? 7 / 30.4375 : p === 'biweekly' ? 14 / 30.4375 : Math.max(1, parseInt(o.cLen, 10) || 1) / 30.4375; }
+  obIncM(o) { return (parseFloat(o.incAmt) || 0) * FREQ[o.incFreq].mult; }
+  obBillOk(b) { const d = parseInt(b.day, 10); return !!b.name.trim() && parseFloat(b.amount) > 0 && d >= 1 && d <= 31; }
+  obBillsM(o) { return o.bills.reduce((a, b) => a + (this.obBillOk(b) ? parseFloat(b.amount) : 0), 0); }
+  obBud(o) {
+    const pf = this.obPf(o), incM = this.obIncM(o), avail = (incM - this.obBillsM(o)) * pf, base = 810 * pf;
+    const scale = incM > 0 ? Math.max(0.2, Math.min(1, avail * 0.85 / base)) : 1, out = {};
+    CATS.forEach(c => out[c.id] = o.budRaw && o.budRaw[c.id] != null ? o.budRaw[c.id] : String(Math.max(0, Math.round(DEF_BUD[c.id] * pf * scale / 5) * 5)));
+    return out;
+  }
+  obFinish() {
+    const s = this.state, o = s.ob, per = this.obPer(o), pf = this.obPf(o), bud = this.obBud(o), id = Date.now();
+    const amt = parseFloat(o.incAmt), p = (o.incNext || '').split('-').map(Number);
+    const first = !o.fresh && s.incomes[0];
+    const inc = amt > 0 && p[0] ? { id: first ? first.id : 'i' + id, name: first ? first.name : 'Paycheck', amount: amt, freq: o.incFreq, anchor: dn(p[0], p[1], p[2]) } : null;
+    const incomes = o.fresh ? (inc ? [inc] : []) : inc ? [inc, ...s.incomes.slice(1)] : s.incomes;
+    const bills = o.bills.filter(b => this.obBillOk(b)).map((b, i) => ({ id: b.id || 'b' + id + i, name: b.name.trim(), amount: parseFloat(b.amount), day: Math.min(31, parseInt(b.day, 10)), group: /rent|mortgage/i.test(b.name) ? 'rent' : undefined }));
+    const budgets = {}; CATS.forEach(c => budgets[c.id] = (parseFloat(bud[c.id]) || 0) / pf);
+    const upd = { currency: o.currency, incomes, bills, budgets, periodType: per, onboarded: true, ob: null, tab: 'home', offset: 0, sheet: null,
+      paidKeys: o.fresh ? bills.filter(b => b.day < 25).map(b => b.id + ':2026-9') : s.paidKeys };
+    if (per === 'custom') { const q = o.cStart.split('-').map(Number); upd.customStart = dn(q[0], q[1], q[2]); upd.customLen = parseInt(o.cLen, 10); }
+    if (o.fresh) Object.assign(upd, { txns: [], incomeTxns: [], debts: [], goals: [] });
+    this.setState(upd);
+    this.toast('You’re all set', 'Tap Log spending whenever you buy something');
+  }
+  obVals() {
+    const s = this.state, o = s.ob, web = s.view === 'web';
+    if (!o) return { showOb: false };
+    const cur = this.cur(o.currency), fm = n => this.fmtWith(cur, n);
+    const set = p => this.setState(x => ({ ob: { ...x.ob, ...p } }));
+    const setBills = fn => this.setState(x => ({ ob: { ...x.ob, bills: fn(x.ob.bills) } }));
+    const per = this.obPer(o), pf = this.obPf(o), len = parseInt(o.cLen, 10) || 1;
+    const unit = per === 'monthly' ? 'per month' : per === 'weekly' ? 'per week' : per === 'biweekly' ? 'per 2 weeks' : 'per ' + len + ' days';
+    const incM = this.obIncM(o), billsM = this.obBillsM(o), avail = Math.round((incM - billsM) * pf);
+    const bud = this.obBud(o), planned = CATS.reduce((a, c) => a + (parseFloat(bud[c.id]) || 0), 0);
+    const incOk = parseFloat(o.incAmt) > 0 && !!o.incNext;
+    const customOk = per !== 'custom' || (len >= 1 && len <= 90 && !!o.cStart);
+    const ok = [true, incOk, customOk, true, true, true][o.step];
+    const next = () => {
+      if (!ok) return;
+      if (o.step === 2) set({ period: per, step: 3 });
+      else if (o.step === 5) this.obFinish();
+      else set({ step: o.step + 1 });
+    };
+    const over = planned > avail;
+    const labels = ['Continue', 'Continue', 'Continue', 'Continue', 'Looks good', 'Go to my dashboard'];
+    const skips = [o.fresh ? 'Just looking? Explore with sample data' : '', 'I’ll add my income later', '', o.bills.length ? '' : 'No bills to add right now', '', ''];
+    const skipAct = [() => this.setState({ onboarded: true, currency: o.currency, ob: null }), () => set({ incAmt: '', step: 2 }), null, () => set({ step: 4 }), null, null][o.step];
+    const names = o.bills.map(b => b.name.trim().toLowerCase());
+    const addBill = name => setBills(bs => [...bs, { id: 'b' + Date.now() + Math.floor(Math.random() * 999), name, amount: '', day: '' }]);
+    const row = (bid, k, v) => setBills(bs => bs.map(b => b.id === bid ? { ...b, [k]: v } : b));
+    return {
+      showOb: true, obMax: web ? '600px' : '440px', obSym: cur.sym.trim(),
+      obS0: o.step === 0, obS1: o.step === 1, obS2: o.step === 2, obS3: o.step === 3, obS4: o.step === 4, obS5: o.step === 5,
+      obCanBack: o.step > (o.fresh ? 0 : 1), obCanClose: !o.fresh && o.step < 5, obClose: () => this.setState({ ob: null }), obBack: () => set({ step: Math.max(0, o.step - 1) }),
+      obShowDots: o.step >= 1 && o.step <= 4, obStepTxt: o.step + ' of 4',
+      obDots: [1, 2, 3, 4].map(i => ({ bg: i <= o.step ? '#FF4F8B' : '#E9DDF3' })),
+      obCurrencies: CUR.map(c => { const on = c.code === o.currency; return { code: c.code, name: c.name, sym: c.sym.trim(), pick: () => set({ currency: c.code }), ring: on ? '#FF4F8B' : '#FFFFFF', bg: on ? '#FFF0F6' : '#FFFFFF', symBg: on ? '#FF4F8B' : '#FFF6E9', symColor: on ? '#FFFFFF' : '#2A1B3D' }; }),
+      obIncAmt: o.incAmt, setObIncAmt: e => set({ incAmt: e.target.value.replace(/[^0-9.]/g, '') }),
+      obFreqOpts: [['weekly', 'Weekly'], ['biweekly', 'Every 2 weeks'], ['monthly', 'Monthly']].map(([id, label]) => { const on = o.incFreq === id; return { label, pick: () => set({ incFreq: id, period: o.fresh && o.period == null ? null : o.period, budRaw: null }), ring: on ? '#FF4F8B' : '#FFFFFF', bg: on ? '#FFF0F6' : '#FFFFFF' }; }),
+      obIncNext: o.incNext, setObIncNext: e => set({ incNext: e.target.value }),
+      obHasIncPreview: incM > 0, obIncPreview: 'That’s about ' + fm(Math.round(incM)) + ' a month.',
+      obPeriodOpts: PERIOD_OPTS.map(po => { const on = per === po.id; return { name: po.name, sub: po.sub, showTag: po.id === o.incFreq && incM > 0, pick: () => set({ period: po.id, budRaw: null }), ring: on ? '#FF4F8B' : '#FFFFFF', bg: on ? '#FFF0F6' : '#FFFFFF', dotRing: on ? '#FF4F8B' : '#E2D1B8', dot: on ? '#FF4F8B' : 'transparent' }; }),
+      obIsCustom: per === 'custom', obCStart: o.cStart, setObCStart: e => set({ cStart: e.target.value, budRaw: null }),
+      obCLen: o.cLen, setObCLen: e => set({ cLen: e.target.value.replace(/[^0-9]/g, '').slice(0, 2), budRaw: null }),
+      obSuggest: SUG_BILLS.filter(n => !names.includes(n.toLowerCase())).map(n => ({ name: n, add: () => addBill(n) })),
+      obAddBlank: () => addBill(''), obHasBills: o.bills.length > 0, obBillsTotal: fm(Math.round(billsM)),
+      obBills: o.bills.map(b => ({ name: b.name, amount: b.amount, day: b.day, amtPh: fm(0),
+        setName: e => row(b.id, 'name', e.target.value), setAmt: e => row(b.id, 'amount', e.target.value.replace(/[^0-9.]/g, '')),
+        setDay: e => row(b.id, 'day', e.target.value.replace(/[^0-9]/g, '').slice(0, 2)), remove: () => setBills(bs => bs.filter(x => x.id !== b.id)) })),
+      obPlanSub: incM > 0 ? 'We’ve suggested amounts ' + unit + ' based on what’s left after bills. Change any you like.' : 'Set a rough amount ' + unit + ' for each. You can fine-tune it any time.',
+      obAvail: fm(avail), obPlanned: fm(planned), obLeft: fm(Math.abs(avail - planned)), obLeftLabel: over ? 'Over by' : 'Not planned',
+      obLeftColor: over ? '#C62B14' : '#FF4F8B', obPlanBg: over ? '#FFE1DA' : '#FFE2EE', obPlanPct: Math.min(100, avail > 0 ? planned / avail * 100 : 100) + '%',
+      obCats: CATS.map((c, i) => ({ name: c.name, color: c.color, value: bud[c.id], border: i === CATS.length - 1 ? 'none' : '1px solid #F4EADB',
+        change: e => { const v = e.target.value.replace(/[^0-9.]/g, ''); this.setState(x => ({ ob: { ...x.ob, budRaw: { ...this.obBud(x.ob), [c.id]: v } } })); } })),
+      obUnit: unit,
+      obTips: [
+        'Tap the green Log spending button whenever you buy something. It takes three taps.',
+        'Add debts and saving goals in their tabs whenever you’re ready.',
+        'Change your currency or budget period any time in Settings.'
+      ].map((text, i) => ({ n: i + 1, text })),
+      obNext: next, obNextLabel: labels[o.step], obNextBg: ok ? '#FF4F8B' : '#CDBFD9',
+      obCanSkip: !!skips[o.step], obSkipLabel: skips[o.step], obSkip: () => skipAct && skipAct()
+    };
+  }
+  period(offset) {
+    const s = this.state;
+    if (s.periodType === 'monthly') {
+      const d = dt(TODAY), y = d.getUTCFullYear(), m = d.getUTCMonth() + offset;
+      const start = Math.floor(Date.UTC(y, m, 1) / DAYMS), end = Math.floor(Date.UTC(y, m + 1, 1) / DAYMS) - 1, sd = dt(start);
+      return { start, end, f: 1, offset, label: MONTHS_L[sd.getUTCMonth()] + ' ' + sd.getUTCFullYear(), short: MONTHS[sd.getUTCMonth()] };
+    }
+    const len = s.periodType === 'weekly' ? 7 : s.periodType === 'biweekly' ? 14 : Math.max(1, s.customLen);
+    const anchor = s.periodType === 'weekly' ? dn(2026, 9, 21) : s.periodType === 'biweekly' ? dn(2026, 9, 18) : s.customStart;
+    const k = Math.floor((TODAY - anchor) / len) + offset, start = anchor + k * len, end = start + len - 1;
+    return { start, end, f: len / 30.4375, offset, label: fmtD(start) + ' – ' + fmtD(end), short: fmtD(start) };
+  }
+  unit() {
+    const s = this.state;
+    return s.periodType === 'monthly' ? 'per month' : s.periodType === 'weekly' ? 'per week' : s.periodType === 'biweekly' ? 'per 2 weeks' : 'per ' + s.customLen + ' days';
+  }
+  monthly() {
+    const s = this.state;
+    return {
+      bills: s.bills.reduce((a, b) => a + b.amount, 0),
+      mins: s.debts.reduce((a, d) => a + Math.min(d.min, d.balance), 0) + (s.debtStrategy !== 'min' && s.debts.some(d => d.balance > 0 && !d.skip) ? (s.debtExtra || 0) : 0),
+      goals: s.goals.reduce((a, g) => a + (g.saved < g.target ? g.monthly : 0), 0)
+    };
+  }
+  isPaid(bill, y, m) { return (y * 12 + m) < (2026 * 12 + 9) || this.state.paidKeys.includes(bill.id + ':' + y + '-' + m); }
+  occurrences(a, b) {
+    const out = [], da = dt(a), db = dt(b);
+    for (let y = da.getUTCFullYear(), m = da.getUTCMonth() + 1; y * 12 + m <= db.getUTCFullYear() * 12 + db.getUTCMonth() + 1; m === 12 ? (y++, m = 1) : m++) {
+      const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+      this.state.bills.forEach(bill => {
+        const n = dn(y, m, Math.min(bill.day, dim));
+        if (n >= a && n <= b) out.push({ bill, n, y, m, paid: this.isPaid(bill, y, m) });
+      });
+    }
+    return out;
+  }
+  incomeMonthly() { return this.state.incomes.reduce((a, i) => a + i.amount * FREQ[i.freq].mult, 0); }
+  oneOffIn(P) { return this.state.incomeTxns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0); }
+  payOcc(inc, a, b) {
+    const out = [];
+    if (inc.freq === 'monthly') {
+      const day = dt(inc.anchor).getUTCDate(), da = dt(a);
+      for (let y = da.getUTCFullYear(), m = da.getUTCMonth() + 1, g = 0; g < 14; g++, m === 12 ? (y++, m = 1) : m++) {
+        const dim = new Date(Date.UTC(y, m, 0)).getUTCDate(), n = dn(y, m, Math.min(day, dim));
+        if (n > b) break; if (n >= a) out.push(n);
+      }
+    } else {
+      const len = FREQ[inc.freq].len;
+      for (let n = inc.anchor + Math.ceil((a - inc.anchor) / len) * len; n <= b; n += len) out.push(n);
+    }
+    return out;
+  }
+  spentIn(P) { return this.state.txns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0); }
+  leftFor(P) {
+    const M = this.monthly();
+    return Math.round(this.incomeMonthly() * P.f - (M.bills + M.mins + M.goals) * P.f) + this.oneOffIn(P) - this.spentIn(P);
+  }
+  toast(title, sub) {
+    clearTimeout(this._t);
+    this.setState({ toast: { title, sub } });
+    this._t = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+  open(sheet, extra) { this.setState(Object.assign({ sheet, entry: '', note: '', form: {}, logType: 'spend' }, extra || {})); }
+  openAddIncome() { this.open({ mode: 'form', kind: 'income' }, { form: { freq: 'biweekly', next: isoOf(TODAY + 7) } }); }
+  openBudget() {
+    const s = this.state, f = this.period(0).f, form = {};
+    CATS.forEach(c => form[c.id] = String(Math.round((s.budgets[c.id] || 0) * f)));
+    this.open({ mode: 'budget' }, { form });
+  }
+  openSettings() {
+    const s = this.state;
+    this.open({ mode: 'settings' }, { form: { currency: s.currency, type: s.periodType, start: isoOf(s.customStart), len: String(s.customLen) } });
+  }
+  press(k) {
+    this.setState(s => {
+      let e = s.entry;
+      if (k === '⌫') e = e.slice(0, -1);
+      else if (k === '.') { if (!e.includes('.')) e = (e || '0') + '.'; }
+      else {
+        if (e.includes('.') && e.split('.')[1].length >= 2) return null;
+        if (e.replace('.', '').length >= 6) return null;
+        e = e === '0' ? k : e + k;
+      }
+      return { entry: e };
+    });
+  }
+  save() {
+    const s = this.state, amt = parseFloat(s.entry);
+    if (!amt) return;
+    const sh = s.sheet;
+    if (sh.mode === 'spend' && s.logType === 'income') {
+      const incomeTxns = [{ id: 'x' + Date.now(), amt, note: s.note.trim(), d: TODAY }, ...s.incomeTxns];
+      this.setState({ incomeTxns, sheet: null }, () => this.toast('Added ' + this.fmt(amt) + ' income', this.fmt(Math.max(0, this.leftFor(this.period(0)))) + ' left to spend now'));
+    } else if (sh.mode === 'spend') {
+      const cat = CATS.find(c => c.id === s.selCat);
+      const txns = [{ id: 't' + Date.now(), amt, cat: cat.id, note: s.note.trim(), d: TODAY }, ...s.txns];
+      this.setState({ txns, sheet: null }, () => {
+        const left = this.leftFor(this.period(0));
+        this.toast('Logged ' + this.fmt(amt) + ' · ' + cat.name, left >= 0 ? this.fmt(left) + ' left to spend' : 'You\'re ' + this.fmt(-left) + ' over this period');
+      });
+    } else if (sh.mode === 'goal') {
+      const g = s.goals.find(x => x.id === sh.id);
+      this.setState({ goals: s.goals.map(x => x.id === sh.id ? { ...x, saved: x.saved + amt } : x), sheet: null });
+      this.toast('Added ' + this.fmt(amt) + ' to ' + g.name, this.fmt(Math.max(0, g.target - g.saved - amt)) + ' to go');
+    } else if (sh.mode === 'debt') {
+      const d = s.debts.find(x => x.id === sh.id), nb = Math.max(0, d.balance - amt);
+      this.setState({ debts: s.debts.map(x => x.id === sh.id ? { ...x, balance: nb } : x), sheet: null });
+      this.toast('Paid ' + this.fmt(amt) + ' on ' + d.name, nb ? this.fmt(nb) + ' left' : 'Paid off. Huge.');
+    }
+  }
+  formValid(kind) {
+    const f = this.state.form;
+    return FORMS[kind].fields.every(fl => {
+      const v = (f[fl.k] || '').trim();
+      if (!fl.req) return true;
+      if (fl.k === 'name' || fl.choice || fl.date) return !!v;
+      if (fl.k === 'day') { const d = parseInt(v, 10); return d >= 1 && d <= 31; }
+      return parseFloat(v) > 0;
+    });
+  }
+  saveForm() {
+    const kind = this.state.sheet.kind;
+    if (!this.formValid(kind)) return;
+    const f = this.state.form, n = k => parseFloat(f[k]) || 0, name = f.name.trim(), id = Date.now();
+    if (kind === 'income') {
+      const p = f.next.split('-').map(Number), inc = { id: 'i' + id, name, amount: n('amount'), freq: f.freq, anchor: dn(p[0], p[1], p[2]) };
+      this.setState(s => ({ incomes: [...s.incomes, inc], sheet: null }));
+      this.toast(name + ' added', 'About ' + this.fmt(Math.round(inc.amount * FREQ[inc.freq].mult)) + ' a month');
+    } else if (kind === 'bill') {
+      const day = parseInt(f.day, 10), bid = 'b' + id;
+      this.setState(s => ({ bills: [...s.bills, { id: bid, name, amount: n('amount'), day }], paidKeys: day < 25 ? [...s.paidKeys, bid + ':2026-9'] : s.paidKeys, sheet: null }));
+      this.toast(name + ' added', 'Due on the ' + day + this.ord(day) + ' each month');
+    } else if (kind === 'debt') {
+      this.setState(s => ({ debts: [...s.debts, { id: 'd' + id, name, balance: n('balance'), original: n('balance'), min: n('min'), rate: n('rate') }], sheet: null }));
+      this.toast(name + ' added', this.fmt(n('min')) + ' a month is now set aside');
+    } else {
+      this.setState(s => ({ goals: [...s.goals, { id: 'g' + id, name, target: n('target'), monthly: n('monthly'), saved: n('saved') }], sheet: null }));
+      this.toast(name + ' added', this.fmt(n('monthly')) + ' a month is now set aside');
+    }
+  }
+  saveBudget() {
+    const s = this.state, f = this.period(0).f, budgets = {};
+    CATS.forEach(c => budgets[c.id] = (parseFloat(s.form[c.id]) || 0) / f);
+    this.setState({ budgets, sheet: null });
+    this.toast('Budget saved', 'Your numbers are updated');
+  }
+  saveSettings() {
+    const f = this.state.form;
+    const upd = { periodType: f.type, currency: f.currency || this.state.currency, sheet: null, offset: 0 };
+    if (f.type === 'custom') {
+      const len = parseInt(f.len, 10), p = (f.start || '').split('-').map(Number);
+      if (!(len >= 1 && len <= 90) || p.length !== 3 || !p[0]) return;
+      upd.customLen = len; upd.customStart = dn(p[0], p[1], p[2]);
+    }
+    this.setState(upd);
+    this.toast('Settings saved', PERIOD_OPTS.find(o => o.id === f.type).name + ' · ' + (f.currency || this.state.currency));
+  }
+  ord(n) { const v = n % 100; return (v >= 11 && v <= 13) ? 'th' : ['th', 'st', 'nd', 'rd'][n % 10] || 'th'; }
+  toggleBill(id) {
+    const k = id + ':2026-9';
+    this.setState(s => ({ paidKeys: s.paidKeys.includes(k) ? s.paidKeys.filter(x => x !== k) : [...s.paidKeys, k] }));
+  }
+
+  renderVals() {
+    const s = this.state, f = n => this.fmt(n), M = this.monthly();
+    const calm = this.props.calmMode ?? false, showDaily = this.props.showDaily ?? true;
+    const web = s.view === 'web', sh = s.sheet;
+    const P = this.period(s.offset), P0 = this.period(0), isPast = s.offset < 0;
+    const canPrev = this.period(s.offset - 1).end >= HIST;
+    const inP = t => t.d >= P.start && t.d <= P.end;
+    const pTx = s.txns.filter(inP).sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
+    const spent = pTx.reduce((a, t) => a + t.amt, 0);
+    const extraIn = this.oneOffIn(P), incomeP = Math.round(this.incomeMonthly() * P.f) + extraIn, billsP = Math.round(M.bills * P.f), minsP = Math.round(M.mins * P.f), goalsP = Math.round(M.goals * P.f);
+    const left = incomeP - billsP - minsP - goalsP - spent;
+    const daysLeft = P.end - TODAY + 1;
+    const dayName = n => n === TODAY ? 'Today' : n === TODAY - 1 ? 'Yesterday' : WD[dt(n).getUTCDay()].slice(0, 3) + ', ' + fmtD(n);
+
+    let heroLabel = 'Left to spend', heroLabelColor = '#FF4F8B', safeSub;
+    if (isPast) {
+      heroLabel = left >= 0 ? 'Left over' : 'Went over by'; heroLabelColor = left >= 0 ? '#FF4F8B' : '#8F6200';
+      safeSub = left >= 0 ? 'This period is closed. You stayed within your budget.' : 'This period is closed. Worth a look at which categories ran over.';
+    } else {
+      safeSub = !s.incomes.length ? 'Add your income on Bills & paydays so we can work out what’s left.' : left < 0 ? 'You\'re ' + f(-left) + ' over for this period. That\'s okay — a new period starts soon.'
+        : showDaily ? 'About ' + f(Math.floor(left / daysLeft)) + ' a day for the next ' + daysLeft + ' days. Bills, debt and savings are already set aside.'
+        : 'Bills, debt and savings are already set aside.';
+    }
+
+    const occNow = this.occurrences(TODAY - 31, TODAY + 45);
+    const upcoming = occNow.filter(o => !o.paid).sort((a, b) => a.n - b.n);
+    const next = upcoming[0];
+    const relDay = n => { const d = n - TODAY; return d < 0 ? 'Overdue' : d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : 'In ' + d + ' days'; };
+
+    const debtTotal = s.debts.reduce((a, d) => a + d.balance, 0), debtOrig = s.debts.reduce((a, d) => a + d.original, 0) || 1;
+    const strat = s.debtStrategy || 'avalanche', extra = s.debtExtra || 0;
+    const plan = simDebts(s.debts, strat, extra), base = simDebts(s.debts, 'min', 0);
+    const debtFreeTxt = plan.stuck ? 'One payment is too low to finish' : 'Debt-free by ' + (plan.months ? monthLabel(plan.months) : 'now');
+    const orderIds = plan.order.filter(d => d.bal > 0 || d.paidAt).map(d => d.id), ORD = ['1st', '2nd', '3rd'];
+    const debtRows = s.debts.map(d => {
+      const p = plan.debts.find(x => x.id === d.id), idx = orderIds.indexOf(d.id), inPlan = !d.skip;
+      let badge = 'Minimums only', badgeBg = '#FFF6E9', badgeColor = '#6E5E80', rank = 100;
+      if (d.balance <= 0) { badge = 'Paid off'; badgeBg = '#FFE2EE'; badgeColor = '#FF4F8B'; rank = 200; }
+      else if (idx >= 0) { rank = idx; badge = idx === 0 ? 'Focus now' : (ORD[idx] || (idx + 1) + 'th') + ' in line'; badgeBg = idx === 0 ? '#FF4F8B' : '#FFE2EE'; badgeColor = idx === 0 ? '#FFFFFF' : '#FF4F8B'; }
+      return {
+        rank, name: d.name, bal: f(d.balance), meta: f(d.min) + '/mo minimum' + (d.rate ? ' · ' + d.rate + '% interest' : ''),
+        w: Math.round((1 - d.balance / d.original) * 100) + '%', badge, badgeBg, badgeColor,
+        op: 1,
+        freeBy: d.balance <= 0 ? 'Done' : !p || p.paidAt === null ? 'Payment doesn\'t cover interest' : 'Paid off by ' + monthLabel(p.paidAt),
+        interestTxt: p ? f(Math.round(p.interest)) + ' interest on this plan' : 'No more interest',
+        inPlanTxt: inPlan ? 'Roll over when paid off' : 'Back to spending when paid off',
+        trackBg: inPlan ? '#FF4F8B' : '#E2D1B8', knob: inPlan ? 'flex-end' : 'flex-start',
+        toggleSkip: () => this.setState(st => ({ debts: st.debts.map(x => x.id === d.id ? { ...x, skip: !x.skip } : x) })),
+        pay: () => this.open({ mode: 'debt', id: d.id })
+      };
+    }).sort((a, b) => a.rank - b.rank);
+    const NM = Math.max(1, base.series.length - 1, plan.series.length - 1), maxBal = Math.max(1, base.series[0] || 0);
+    const X = i => (i / NM * 600).toFixed(1), Y = v => (200 - v / maxBal * 190).toFixed(1);
+    const lineOf = ser => ser.map((v, i) => (i ? 'L' : 'M') + X(i) + ',' + Y(v)).join(' ');
+    const planLine = lineOf(plan.series), baseLine = lineOf(base.series);
+    const planArea = planLine + ' L' + X(plan.series.length - 1) + ',200 L0,200 Z';
+    const debtDots = plan.debts.filter(d => d.paidAt).map(d => ({ left: (d.paidAt / NM * 100) + '%', top: ((200 - (plan.series[d.paidAt] || 0) / maxBal * 190) / 2) + '%', title: d.name + ' paid off · ' + monthLabel(d.paidAt) }));
+    const debtYears = [];
+    for (let i = 1; i <= NM; i++) { if ((8 + i) % 12 === 0) { const yr = 2026 + (8 + i) / 12; if (NM <= 96 || yr % 2 === 0) debtYears.push({ left: (i / NM * 100) + '%', label: String(yr) }); } }
+    const STRATS = [['snowball', 'Snowball', 'Smallest balance first. Quick wins keep you going.'], ['avalanche', 'Avalanche', 'Highest interest first. Pays the least interest overall.'], ['min', 'Minimums only', 'Just the minimum on each. Simplest, but slowest.']];
+    const stratOpts = STRATS.map(([id, name, desc]) => {
+      const r = id === strat ? plan : simDebts(s.debts, id, extra), on = id === strat;
+      return { name, desc, result: r.stuck ? 'Never finishes at these payments' : 'Free by ' + monthLabel(r.months) + ' · ' + f(Math.round(r.interest)) + ' interest',
+        pick: () => this.setState({ debtStrategy: id }), ring: on ? '#FF4F8B' : '#F4EADB', bg: on ? '#FFF0F6' : '#FFFFFF', dotRing: on ? '#FF4F8B' : '#E2D1B8', dot: on ? '#FF4F8B' : 'transparent' };
+    });
+    const target = strat === 'snowball' ? 'the debt with the smallest balance' : 'the debt with the highest interest rate';
+    const howTexts = strat === 'min' ? [
+      'Every debt gets its minimum payment each month, so nothing falls behind.',
+      'No extra money goes in, and when a debt is paid off its payment stays in your budget instead of moving to the next one.',
+      'This is the simplest option, but it takes the longest and costs the most interest.'
+    ] : [
+      'Every debt gets its minimum payment each month, so nothing falls behind.',
+      'Your extra money (' + f(extra) + '/mo) goes to ' + target + ' first.',
+      'When that debt is paid off, its minimum payment is freed up. That freed-up money rolls onto the next debt in line, so each payment gets bigger as you go.',
+      'On each debt you can turn off "Roll over when paid off". Then, once that debt is gone, its old payment goes back into your left to spend instead of moving to the next debt.'
+    ];
+    const savedM = base.months - plan.months, savedI = base.interest - plan.interest;
+    const extraResult = plan.stuck ? 'A payment is too low to ever finish — try adding more.' : base.stuck ? 'Debt-free by ' + monthLabel(plan.months) + '. Minimums alone would never finish.' : savedM > 0 ? spanTxt(savedM) + ' sooner · ' + f(Math.round(savedI)) + ' less interest' : 'Same as paying the minimums';
+    const gSaved = s.goals.reduce((a, g) => a + g.saved, 0), gTarget = s.goals.reduce((a, g) => a + g.target, 0) || 1;
+    const budgetP = c => Math.round((s.budgets[c.id] || 0) * P.f);
+    const plannedP = CATS.reduce((a, c) => a + budgetP(c), 0);
+
+    const tiles = [
+      next ? { label: 'NEXT BILL · ' + relDay(next.n).toUpperCase(), value: next.bill.name + ' ' + f(next.bill.amount), sub: (() => { const r = upcoming.slice(1).filter(o => o.n <= P0.end); return r.length ? r.length + ' more this period · ' + f(r.reduce((a, o) => a + o.bill.amount, 0)) : 'Last bill this period'; })(), w: '0%', track: 'transparent', barColor: 'transparent', bg: '#FFEDB8', labelColor: '#8F6200', go: () => this.setState({ tab: 'bills' }) }
+        : { label: 'BILLS', value: 'All paid', sub: 'Nothing due right now', w: '100%', track: '#F4EADB', barColor: '#FF4F8B', bg: '#FFFFFF', labelColor: '#6E5E80', go: () => this.setState({ tab: 'bills' }) },
+      { label: 'SPENT ' + (isPast ? 'THAT PERIOD' : 'SO FAR'), value: f(spent), sub: 'of ' + f(plannedP) + ' planned', w: Math.min(100, spent / (plannedP || 1) * 100) + '%', track: '#F4EADB', barColor: spent > plannedP ? '#FFB400' : '#2A1B3D', bg: '#FFFFFF', labelColor: '#6E5E80', go: () => {} },
+      !s.debts.length ? { label: 'DEBT', value: 'None', sub: 'Add one to plan your payoff', w: '0%', track: '#F4EADB', barColor: '#FF4F8B', bg: '#FFFFFF', labelColor: '#6E5E80', go: () => this.setState({ tab: 'debt' }) } :
+      { label: 'DEBT', value: f(debtTotal), sub: Math.round((1 - debtTotal / debtOrig) * 100) + '% paid off · ' + debtFreeTxt.replace('Debt-free by', 'free by'), w: Math.round((1 - debtTotal / debtOrig) * 100) + '%', track: '#F4EADB', barColor: '#FF4F8B', bg: '#FFFFFF', labelColor: '#6E5E80', go: () => this.setState({ tab: 'debt' }) },
+      { label: 'SAVINGS', value: f(gSaved), sub: !s.goals.length ? 'No goals yet. Add one any time' : 'of ' + f(gTarget) + ' across ' + s.goals.length + ' goal' + (s.goals.length === 1 ? '' : 's'), w: Math.min(100, gSaved / gTarget * 100) + '%', track: '#F4EADB', barColor: '#FF4F8B', bg: '#FFFFFF', labelColor: '#6E5E80', go: () => this.setState({ tab: 'goals' }) }
+    ];
+
+    // spending over time
+    const incl = SERIES.filter(x => !s.excluded.includes(x.id));
+    const bucket = (a, b) => {
+      const map = {};
+      s.txns.forEach(t => { if (t.d >= a && t.d <= b) { (map[t.d] = map[t.d] || {})[t.cat] = (map[t.d][t.cat] || 0) + t.amt; } });
+      this.occurrences(a, Math.min(b, TODAY)).forEach(o => { const g = o.bill.group === 'rent' ? 'rent' : 'bills'; (map[o.n] = map[o.n] || {})[g] = (map[o.n][g] || 0) + o.bill.amount; });
+      return map;
+    };
+    let raw = [];
+    if (s.chartMode === 'day') {
+      const map = bucket(P.start, P.end), len = P.end - P.start + 1, step = len > 20 ? 7 : len > 8 ? 2 : 1;
+      for (let n = P.start, i = 0; n <= P.end; n++, i++) {
+        const vals = incl.map(x => ({ amt: (map[n] || {})[x.id] || 0, color: x.color }));
+        raw.push({ vals, future: n > TODAY, title: fmtD(n), label: i % step === 0 ? (len > 8 ? String(dt(n).getUTCDate()) : WD[dt(n).getUTCDay()].slice(0, 3)) : '' });
+      }
+    } else {
+      for (let o = P.offset - 5; o <= P.offset; o++) {
+        const Q = this.period(o); if (Q.end < HIST) continue;
+        const map = bucket(Q.start, Q.end), tot = {};
+        Object.values(map).forEach(day => Object.keys(day).forEach(k => tot[k] = (tot[k] || 0) + day[k]));
+        raw.push({ vals: incl.map(x => ({ amt: tot[x.id] || 0, color: x.color })), future: false, title: Q.label, label: Q.short });
+      }
+    }
+    raw.forEach(r => r.total = r.vals.reduce((a, v) => a + v.amt, 0));
+    const cmax = Math.max(1, ...raw.map(r => r.total));
+    const chartCols = raw.map(r => ({
+      title: r.title + ' · ' + f(r.total), label: r.label,
+      segs: r.future ? [{ h: '3px', color: '#F4EADB' }] : r.total > 0 ? [{ h: (r.total / cmax * 100) + '%', color: '#FF4F8B' }] : []
+    }));
+    const chartTotal = s.chartMode === 'day' ? raw.reduce((a, r) => a + r.total, 0) : 0;
+    const chartSub = s.chartMode === 'day'
+      ? f(chartTotal) + ' in this period' + (s.excluded.length ? ' · ' + s.excluded.length + ' hidden' : '')
+      : 'Last ' + raw.length + ' periods · avg ' + f(Math.round(raw.reduce((a, r) => a + r.total, 0) / (raw.length || 1)));
+
+    // categories
+    const donutParts = []; let acc = 0;
+    const catRows = CATS.map((c, i) => {
+      const list = pTx.filter(t => t.cat === c.id), sp = list.reduce((a, t) => a + t.amt, 0), bud = budgetP(c);
+      const over = sp - bud, open = s.openCat === c.id;
+      if (sp > 0) { const deg = sp / (spent || 1) * 360; donutParts.push(c.color + ' ' + acc + 'deg ' + (acc + deg) + 'deg'); acc += deg; }
+      return {
+        name: c.name, color: c.color,
+        w: Math.min(100, bud ? sp / bud * 100 : (sp ? 100 : 0)) + '%',
+        overW: over > 0 ? Math.min(100, bud ? over / bud * 100 : 100) + '%' : '0%',
+        leftTxt: s.catView === 'donut' ? f(sp) + ' / ' + f(bud) : over > 0 ? f(over) + ' over' : f(-over) + ' left',
+        leftColor: over > 0 ? '#C62B14' : '#6E5E80',
+        shareTxt: s.catView === 'donut' && spent ? Math.round(sp / spent * 100) + '%' : '',
+        showBar: s.catView === 'bars',
+        border: i === CATS.length - 1 ? 'none' : '1px solid #F4EADB',
+        open, rot: open ? '180deg' : '0deg',
+        toggle: () => this.setState(x => ({ openCat: x.openCat === c.id ? null : c.id })),
+        summary: f(sp) + ' of ' + f(bud) + ' planned · ' + list.length + ' purchase' + (list.length === 1 ? '' : 's') + (over > 0 ? ' · ' + f(over) + ' over' : ''),
+        txns: list.map(t => ({ title: t.note || c.name, when: dayName(t.d), amt: f(t.amt) })),
+        empty: !list.length,
+        log: () => this.open({ mode: 'spend' }, { selCat: c.id })
+      };
+    });
+    const recentList = pTx.concat(s.incomeTxns.filter(inP).map(t => ({ ...t, inc: true }))).sort((a, b) => b.d - a.d).slice(0, web ? 8 : 5);
+    const recent = recentList.map((t, i) => {
+      const border = i === recentList.length - 1 ? 'none' : '1px solid #F4EADB';
+      if (t.inc) return { title: t.note || 'Extra income', meta: 'Income · ' + dayName(t.d), amt: '+' + f(t.amt), amtColor: '#FF4F8B', color: '#FF4F8B', border };
+      const c = CATS.find(x => x.id === t.cat) || CATS[5];
+      return { title: t.note || c.name, meta: (t.note ? c.name + ' · ' : '') + dayName(t.d), amt: f(t.amt), amtColor: '#2A1B3D', color: c.color, border };
+    });
+    const payDays = {}; s.incomes.forEach(inc => this.payOcc(inc, dn(2026, 9, 1), dn(2026, 9, 30)).forEach(n => (payDays[n] = payDays[n] || []).push(inc)));
+    const nextPayOf = inc => this.payOcc(inc, TODAY, TODAY + 400)[0];
+    const nextPay = Math.min(...s.incomes.map(nextPayOf).filter(x => x != null), Infinity);
+    const incomeRows = s.incomes.map(inc => { const np = nextPayOf(inc), d = np - TODAY; return { name: inc.name, amt: f(inc.amount),
+      meta: FREQ[inc.freq].label + ' · ' + (d === 0 ? 'payday today' : d === 1 ? 'next payday tomorrow' : 'next ' + dayName(np) + ' (in ' + d + ' days)'), metaColor: d <= 2 ? '#FF4F8B' : '#6E5E80',
+      remove: () => this.setState(st => ({ incomes: st.incomes.filter(x => x.id !== inc.id) })) }; });
+
+    // bills tab (current month)
+    const monthOcc = this.occurrences(dn(2026, 9, 1), dn(2026, 9, 30)).sort((a, b) => a.n - b.n);
+    const mUnpaid = monthOcc.filter(o => !o.paid), mPaid = monthOcc.filter(o => o.paid);
+    const mTotal = monthOcc.reduce((a, o) => a + o.bill.amount, 0), mPaidAmt = mPaid.reduce((a, o) => a + o.bill.amount, 0);
+    const whenTxt = o => {
+      if (o.paid) return 'Paid · ' + fmtD(o.n);
+      const d = o.n - TODAY;
+      return d < 0 ? 'Overdue · was due ' + fmtD(o.n) : d === 0 ? 'Due today' : d === 1 ? 'Due tomorrow' : 'Due in ' + d + ' days · ' + fmtD(o.n);
+    };
+    const billRow = (o, i, arr) => ({
+      name: o.bill.name, amt: f(o.bill.amount), when: whenTxt(o),
+      whenColor: o.n - TODAY <= 2 ? '#8F6200' : '#6E5E80',
+      ring: o.paid ? '#FF4F8B' : '#E2D1B8', fill: o.paid ? '#FF4F8B' : '#FFFFFF', check: o.paid ? '✓' : '',
+      border: i === arr.length - 1 ? 'none' : '1px solid #F4EADB', toggle: () => this.toggleBill(o.bill.id)
+    });
+    const first = dt(dn(2026, 9, 1)).getUTCDay(), calCells = [];
+    const blank = { label: '', chips: [], showDot: false, h: web ? '92px' : '44px', bg: 'transparent', pad: '0', align: 'center', justify: 'center', numBg: 'transparent', color: '#2A1B3D', weight: 500, dot: 'transparent' };
+    for (let i = 0; i < first; i++) calCells.push(blank);
+    for (let d = 1; d <= 30; d++) {
+      const n = dn(2026, 9, d), os = monthOcc.filter(o => o.n === n), due = os.some(o => !o.paid), isT = n === TODAY, pays = payDays[n] || [];
+      calCells.push(web ? {
+        label: d, h: '92px', bg: '#FFFBF4', pad: '6px', align: 'flex-start', justify: 'flex-start',
+        numBg: isT ? '#2A1B3D' : 'transparent', color: isT ? '#FFFFFF' : n < TODAY ? '#A898B5' : '#2A1B3D', weight: isT ? 700 : 500,
+        chips: pays.map(inc => ({ name: 'Payday ' + f(inc.amount), title: inc.name + ' · ' + f(inc.amount), bg: '#D6F6E4', color: '#0F6B3E', deco: 'none' })).concat(os.map(o => ({ name: o.bill.name, title: o.bill.name + ' · ' + f(o.bill.amount), bg: o.paid ? '#EFE2CE' : '#FFEDB8', color: o.paid ? '#6E5E80' : '#6B4700', deco: 'none' }))),
+        showDot: false, dot: 'transparent'
+      } : {
+        label: d, h: '44px', bg: due ? '#FFEDB8' : pays.length ? '#FFE2EE' : 'transparent', pad: '2px', align: 'center', justify: 'center',
+        numBg: isT ? '#2A1B3D' : 'transparent', color: isT ? '#FFFFFF' : n < TODAY ? '#A898B5' : '#2A1B3D', weight: isT || due ? 700 : 500,
+        chips: [], showDot: true, dot: due ? '#FFB400' : pays.length ? '#FF4F8B' : os.length ? '#CDBFD9' : 'transparent'
+      });
+    }
+
+    const goalRows = s.goals.map(g => {
+      const l = Math.max(0, g.target - g.saved), pct = Math.min(1, g.saved / g.target);
+      return {
+        name: g.name, saved: f(g.saved), target: f(g.target), w: pct * 100 + '%', pctTxt: Math.round(pct * 100) + '%',
+        byTxt: l ? f(g.monthly) + '/mo · reach it by ' + monthLabel(Math.ceil(l / g.monthly)) : 'Goal reached',
+        add: () => this.open({ mode: 'goal', id: g.id })
+      };
+    });
+
+    // sheets
+    let sheetTitle = '';
+    if (sh) {
+      if (sh.mode === 'spend') sheetTitle = s.logType === 'income' ? 'Log income' : 'Log spending';
+      if (sh.mode === 'goal') sheetTitle = 'Add to ' + s.goals.find(g => g.id === sh.id).name;
+      if (sh.mode === 'debt') sheetTitle = 'Pay ' + s.debts.find(d => d.id === sh.id).name;
+      if (sh.mode === 'form') sheetTitle = FORMS[sh.kind].title;
+      if (sh.mode === 'budget') sheetTitle = 'Edit budget';
+      if (sh.mode === 'settings') sheetTitle = 'Settings';
+    }
+    const form = sh && sh.mode === 'form' ? FORMS[sh.kind] : null;
+    const setF = (k, v) => this.setState(x => ({ form: { ...x.form, [k]: v } }));
+    const formFields = form ? form.fields.map(fl => ({
+      isInput: !fl.choice, isChoice: !!fl.choice, type: fl.date ? 'date' : 'text',
+      opts: fl.choice ? fl.choice.map(([id, label]) => ({ label, pick: () => setF(fl.k, id), bg: s.form[fl.k] === id ? '#2A1B3D' : '#FFF6E9', color: s.form[fl.k] === id ? '#FFFFFF' : '#2A1B3D' })) : [],
+      label: fl.label, ph: fl.ph === '$0' ? f(0) : fl.ph, value: s.form[fl.k] || '', span: fl.full ? '1 / -1' : 'auto',
+      mode: fl.int ? 'numeric' : fl.num ? 'decimal' : 'text',
+      change: e => { let v = e.target.value; if (fl.int) v = v.replace(/[^0-9]/g, '').slice(0, 2); else if (fl.num) v = v.replace(/[^0-9.]/g, ''); setF(fl.k, v); }
+    })) : [];
+    const isBudget = !!sh && sh.mode === 'budget';
+    const f0 = P0.f, availB = isBudget ? Math.round(this.incomeMonthly() * f0) - Math.round((M.bills + M.mins + M.goals) * f0) : 0;
+    const planB = isBudget ? CATS.reduce((a, c) => a + (parseFloat(s.form[c.id]) || 0), 0) : 0;
+    const spentAvg = c => { let t = 0, k = 0; for (let o = -3; o <= -1; o++) { const Q = this.period(o); if (Q.end < HIST) continue; k++; t += s.txns.reduce((a, x) => a + (x.cat === c.id && x.d >= Q.start && x.d <= Q.end ? x.amt : 0), 0); } return k ? Math.round(t / k) : 0; };
+    const isSettings = !!sh && sh.mode === 'settings';
+    const sLenOk = s.form.type !== 'custom' || (parseInt(s.form.len, 10) >= 1 && parseInt(s.form.len, 10) <= 90 && !!s.form.start);
+    const tabs = [['home', 'Home'], ['bills', 'Bills'], ['debt', 'Debt'], ['goals', 'Goals']];
+    const seg = (cur, opts, key) => opts.map(([id, label]) => ({ label, pick: () => this.setState({ [key]: id }), bg: cur === id ? '#2A1B3D' : 'transparent', color: cur === id ? '#FFFFFF' : '#6E5E80' }));
+
+    return {
+      isWeb: web, isMobile: !web,
+      pageBg: web ? '#FFF6E9' : '#FCEAD0', frameMax: web ? '1200px' : '440px',
+      framePad: web ? '8px 32px 80px' : '0 20px 180px', frameBg: web ? 'transparent' : '#FFF6E9',
+      viewOpts: [['web', 'Web'], ['mobile', 'Mobile']].map(([id, label]) => ({
+        label, pick: () => this.setState({ view: id }),
+        bg: s.view === id ? '#FFFFFF' : 'transparent', color: s.view === id ? '#2A1B3D' : '#6E5E80',
+        shadow: s.view === id ? '0 1px 3px rgba(42,27,61,.12)' : 'none'
+      })),
+      toast: s.toast,
+      isHome: s.tab === 'home', isBills: s.tab === 'bills', isDebt: s.tab === 'debt', isGoals: s.tab === 'goals',
+      periodLabel: P.label, isPast,
+      periodMeta: isPast ? 'Past period · ' + fmtD(P.start) + ' – ' + fmtD(P.end) : 'Today is ' + WD[dt(TODAY).getUTCDay()] + ', ' + fmtD(TODAY) + (nextPay < Infinity ? ' · payday in ' + (nextPay - TODAY) + ' day' + (nextPay - TODAY === 1 ? '' : 's') : '') + ' · new period in ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's'),
+      prevOp: canPrev ? 1 : 0.35, nextOp: isPast ? 1 : 0.35,
+      prevPeriod: () => canPrev && this.setState(x => ({ offset: x.offset - 1, openCat: null })),
+      nextPeriod: () => isPast && this.setState(x => ({ offset: x.offset + 1, openCat: null })),
+      backToNow: () => this.setState({ offset: 0, openCat: null }),
+      heroLabel, heroLabelColor, safeTxt: f(Math.abs(isPast ? left : Math.max(0, left))), safeSub,
+      showBreakdownToggle: !calm, showBreakdown: !calm && s.showBreakdown,
+      breakdownLabel: s.showBreakdown ? 'Hide the math' : 'How is this worked out?',
+      toggleBreakdown: () => this.setState(x => ({ showBreakdown: !x.showBreakdown })),
+      breakdown: [
+        { label: 'Money coming in', val: '+' + f(incomeP) },
+        { label: 'Bills (set aside)', val: '−' + f(billsP) },
+        { label: 'Debt payments', val: '−' + f(minsP) },
+        { label: 'Saving for goals', val: '−' + f(goalsP) },
+        { label: 'Spent', val: '−' + f(spent) }
+      ],
+      tiles,
+      chartModes: seg(s.chartMode, [['day', 'By day'], ['period', 'By period']], 'chartMode'),
+      chartSub, chartCols, chartGap: raw.length > 20 ? '3px' : '8px',
+      chartMaxTxt: f(cmax), chartMidTxt: f(Math.round(cmax / 2)), chartHasData: raw.some(r => r.total > 0), chartEmpty: !raw.some(r => r.total > 0),
+      seriesChips: SERIES.map(x => {
+        const on = !s.excluded.includes(x.id);
+        return { name: x.name, dot: on ? x.color : '#E2D1B8', ring: on ? '#EFE2CE' : '#F4EADB', bg: on ? '#FFFFFF' : '#FFF6E9', color: on ? '#2A1B3D' : '#A898B5', deco: on ? 'none' : 'line-through',
+          toggle: () => this.setState(st => ({ excluded: on ? [...st.excluded, x.id] : st.excluded.filter(e => e !== x.id) })) };
+      }),
+      seriesAll: () => this.setState({ excluded: [] }),
+      seriesNone: () => this.setState({ excluded: SERIES.map(x => x.id) }),
+      spentTxt: f(spent), plannedTxt: f(plannedP),
+      breakdownModes: seg(s.catView, [['bars', 'Bars'], ['donut', 'Donut']], 'catView'),
+      isDonut: s.catView === 'donut', donutBg: donutParts.length ? 'conic-gradient(' + donutParts.join(',') + ')' : '#F4EADB',
+      openBudget: () => this.openBudget(),
+      catRows, showRecent: !calm, recent, recentTitle: isPast ? 'Transactions' : 'Recent',
+      billsLeftTxt: mUnpaid.length ? f(mUnpaid.reduce((a, o) => a + o.bill.amount, 0)) + ' left to pay this month · ' + mUnpaid.length + ' bill' + (mUnpaid.length > 1 ? 's' : '') : 'Everything is paid this month',
+      billsPaidTxt: f(mPaidAmt), billsTotalTxt: f(mTotal), billsPaidPct: (mPaidAmt / (mTotal || 1) * 100) + '%',
+      weekdays: web ? ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] : ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+      calCells, calGap: web ? '6px' : '4px', calHeadAlign: web ? 'left' : 'center',
+      upcomingBills: mUnpaid.map(billRow), noUpcoming: !mUnpaid.length, paidBills: mPaid.map(billRow),
+      openAddBill: () => this.open({ mode: 'form', kind: 'bill' }),
+      openAddDebt: () => this.open({ mode: 'form', kind: 'debt' }),
+      openAddGoal: () => this.open({ mode: 'form', kind: 'goal' }),
+      debtStats: [
+        { label: 'Debt-free by', val: plan.stuck ? 'Not yet' : monthLabel(plan.months) },
+        { label: 'Interest to pay', val: f(Math.round(plan.interest)) },
+        { label: 'Paying monthly', val: f(M.mins) }
+      ],
+      planLine, baseLine, planArea, debtDots, debtYears, debtMaxTxt: f(maxBal), stratOpts,
+      howSteps: howTexts.map((t, i) => ({ n: i + 1, text: t })),
+      howWhy: strat === 'snowball' ? 'Why Snowball: you see debts disappear sooner, which makes it easier to stick with.' : strat === 'avalanche' ? 'Why Avalanche: you pay the least interest overall.' : 'Tip: even a small extra amount with Snowball or Avalanche can save a lot.',
+      showHow: !!s.showHowDebt, howLabel: s.showHowDebt ? 'Hide how this works' : 'How this works',
+      toggleHow: () => this.setState(x => ({ showHowDebt: !x.showHowDebt })),
+      extraEnabled: strat !== 'min', extraDisabled: strat === 'min', extraVal: extra, extraTxt: f(extra),
+      setExtra: e => this.setState({ debtExtra: parseInt(e.target.value, 10) || 0 }),
+      extraResult, extraResultSub: 'Compared with paying only the minimums. The extra comes out of your left to spend.',
+      debtTotal: f(debtTotal), debtPct: Math.max(0, Math.round((1 - debtTotal / debtOrig) * 100)) + '%',
+      debtPaidTxt: f(Math.max(0, debtOrig - debtTotal)) + ' paid off so far', debtFreeTxt, debtRows,
+      goalsSaved: f(gSaved), goalsTarget: f(s.goals.length ? gTarget : 0), goalsPct: Math.min(100, gSaved / gTarget * 100) + '%',
+      goalsPctTxt: !s.goals.length ? 'Add a goal to start saving' : Math.round(gSaved / gTarget * 100) + '% of the way · ' + f(Math.max(0, gTarget - gSaved)) + ' to go',
+      goalsSub: f(M.goals) + '/mo set aside', goalRows,
+      nav: tabs.map(([id, label]) => ({ label, go: () => this.setState({ tab: id, openCat: null }), bg: s.tab === id ? '#FFE2EE' : 'transparent', color: s.tab === id ? '#FF4F8B' : '#6E5E80' })),
+      openLog: () => this.open({ mode: 'spend' }), openSettings: () => this.openSettings(),
+      sheetOpen: !!sh, sheetTitle, closeSheet: () => this.setState({ sheet: null }),
+      sheetAlign: web ? 'center' : 'flex-end', sheetOuterPad: web ? '24px' : '0',
+      sheetMax: web ? '480px' : '440px', sheetRadius: web ? '28px' : '28px 28px 0 0',
+      isKeypad: !!sh && ['spend', 'goal', 'debt'].includes(sh.mode), isSpend: !!sh && sh.mode === 'spend', isForm: !!form,
+      amtDisplay: this.cur().after ? (s.entry || '0') + ' ' + this.cur().sym : this.cur().sym + (s.entry || '0'), amtColor: s.entry ? '#2A1B3D' : '#CDBFD9',
+      catChips: CATS.map(c => ({ name: c.name, color: c.color, pick: () => this.setState({ selCat: c.id }), ring: s.selCat === c.id ? '#2A1B3D' : '#F4EADB', bg: s.selCat === c.id ? '#FFF6E9' : '#FFFFFF' })),
+      note: s.note, setNote: e => this.setState({ note: e.target.value }),
+      keys: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '.', '0', '⌫'].map(k => ({ label: k, press: () => this.press(k) })),
+      save: () => this.save(), saveBg: (parseFloat(s.entry) || 0) ? '#FF4F8B' : '#CDBFD9',
+      saveLabel: !sh ? '' : sh.mode === 'spend' ? ((parseFloat(s.entry) || 0) ? (s.logType === 'income' ? 'Add ' + f(parseFloat(s.entry)) + ' income' : 'Log ' + f(parseFloat(s.entry))) : 'Enter an amount') : sh.mode === 'goal' ? 'Add money' : 'Log payment',
+      formFields, formNote: form ? form.note : '', formBtn: form ? form.btn : '',
+      saveForm: () => this.saveForm(), formSaveBg: form && this.formValid(sh.kind) ? '#FF4F8B' : '#CDBFD9',
+      isBudget, perUnit: this.unit(),
+      bIncomeTxt: f(Math.round(this.incomeMonthly() * f0)), bIncomeSub: s.incomes.length + ' regular income source' + (s.incomes.length === 1 ? '' : 's') + ' · change these on Bills & paydays',
+      openAddIncome: () => this.openAddIncome(), incomeRows, noIncome: !s.incomes.length, incomeMonthTxt: f(Math.round(this.incomeMonthly())),
+      logTypes: [['spend', 'Spending'], ['income', 'Income']].map(([id, label]) => { const on = (s.logType || 'spend') === id; return { label, pick: () => this.setState({ logType: id }), bg: on ? '#FFFFFF' : 'transparent', color: on ? '#2A1B3D' : '#6E5E80', shadow: on ? '0 1px 3px rgba(42,27,61,.12)' : 'none' }; }),
+      isSpendCats: s.logType !== 'income', notePh: s.logType === 'income' ? 'Where is it from? (optional)' : 'What was it? (optional)',
+      budgetRows: isBudget ? CATS.map((c, i) => ({ name: c.name, color: c.color, value: s.form[c.id] || '', hint: 'Usually about ' + f(spentAvg(c)),
+        border: i === CATS.length - 1 ? 'none' : '1px solid #EFE2CE', change: e => setF(c.id, e.target.value.replace(/[^0-9.]/g, '')) })) : [],
+      planAvail: f(availB), planTotal: f(planB), planLeft: f(Math.abs(availB - planB)), planLeftLabel: planB > availB ? 'Over by' : 'Not planned', planLeftColor: planB > availB ? '#C62B14' : '#FF4F8B', planPct: Math.min(100, availB > 0 ? planB / availB * 100 : 100) + '%', planBarColor: planB > availB ? '#E0341B' : '#FF4F8B',
+      planBg: planB > availB ? '#FFE1DA' : '#FFE2EE', planMsgColor: planB > availB ? '#8F6200' : '#FF4F8B',
+      planMsg: planB > availB ? 'That\'s ' + f(planB - availB) + ' more than you have. Try trimming a category.' : f(availB - planB) + ' not planned — a nice cushion for surprises.',
+      saveBudget: () => this.saveBudget(),
+      isSettings, isCustomSel: isSettings && s.form.type === 'custom',
+      periodOpts: PERIOD_OPTS.map(o => { const on = s.form.type === o.id; return { name: o.name, sub: o.sub, pick: () => setF('type', o.id), ring: on ? '#FF4F8B' : '#F4EADB', bg: on ? '#FFF0F6' : '#FFFFFF', dotRing: on ? '#FF4F8B' : '#E2D1B8', dot: on ? '#FF4F8B' : 'transparent' }; }),
+      sStart: s.form.start || '', setSStart: e => setF('start', e.target.value),
+      sLen: s.form.len || '', setSLen: e => setF('len', e.target.value.replace(/[^0-9]/g, '').slice(0, 2)),
+      saveSettings: () => this.saveSettings(), settingsSaveBg: sLenOk ? '#FF4F8B' : '#CDBFD9',
+      sCurrency: s.form.currency || s.currency, setSCurrency: e => setF('currency', e.target.value),
+      currencyOpts: CUR.map(c => ({ code: c.code, label: c.code + ' · ' + c.name + ' (' + c.sym.trim() + ')' })),
+      rerunSetup: () => this.setState({ sheet: null, ob: this.obInit() }),
+      sl0: f(0), sl500: f(500), sl1000: f(1000), hasDebts: s.debts.length > 0, noDebts: !s.debts.length,
+      ...this.obVals()
+    };
+  }
+}
+</script>
+</body>
+</html>

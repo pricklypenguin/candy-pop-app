@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body{margin:0;background:#E4E1DA;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button{font-family:inherit;cursor:pointer}
+a{color:#2F7359}
+a:hover{color:#22211E}
+</style>
+</helmet>
+
+<section data-screen-label="Home styles" style="padding:64px;display:flex;flex-direction:column;gap:36px;font-family:'Instrument Sans',sans-serif;color:#22211E">
+<div style="display:flex;flex-direction:column;gap:6px;max-width:900px">
+<div style="font-size:14px;font-weight:600;color:#6A675F;letter-spacing:.04em">TURN 1 · HOME SCREEN STYLES</div>
+<div style="font-size:34px;font-weight:600;letter-spacing:-0.02em">Four directions, same September test data</div>
+<div style="font-size:17px;color:#55524B">Left to spend $338 · $536 spent of $810 · Eating out $20 over · Electric due tomorrow · payday Oct 2.</div>
+</div>
+
+<div style="display:flex;flex-wrap:wrap;gap:64px;align-items:flex-start">
+
+<div id="1a" style="width:1200px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="background:#22211E;color:#FFFFFF;border-radius:10px;padding:6px 12px;font-size:16px;font-weight:700">1a</span><span style="font-size:20px;font-weight:600">Bento — soft colour blocks</span><span style="font-size:15px;color:#6A675F">Each topic gets its own pastel tile, so your eye finds things by colour.</span></div>
+<div style="background:#FBFAF7;border-radius:28px;padding:28px 32px 36px;font-family:'Plus Jakarta Sans',sans-serif;color:#15201B;display:flex;flex-direction:column;gap:22px;box-shadow:0 20px 60px rgba(0,0,0,.08)">
+<div style="display:flex;align-items:center;gap:16px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:32px;height:32px;border-radius:11px;background:#0E3B2B;display:flex;align-items:center;justify-content:center"><span style="width:11px;height:11px;border-radius:50%;background:#D9F2E3"></span></span><span style="font-size:20px;font-weight:800;letter-spacing:-0.02em">Steady</span></div>
+<div style="display:flex;gap:4px;margin-left:12px">
+<span style="border-radius:999px;padding:10px 18px;font-size:15px;font-weight:700;background:#15201B;color:#FFFFFF">Home</span>
+<span style="border-radius:999px;padding:10px 18px;font-size:15px;font-weight:600;color:#5B665F">Bills</span>
+<span style="border-radius:999px;padding:10px 18px;font-size:15px;font-weight:600;color:#5B665F">Debt</span>
+<span style="border-radius:999px;padding:10px 18px;font-size:15px;font-weight:600;color:#5B665F">Goals</span>
+</div>
+<div style="flex:1"></div>
+<button style="border:none;border-radius:999px;padding:13px 22px;font-size:15px;font-weight:700;background:#1F8A5B;color:#FFFFFF">+ Log spending</button>
+</div>
+<div style="display:flex;justify-content:space-between;align-items:baseline">
+<div style="font-size:30px;font-weight:800;letter-spacing:-0.03em">Good afternoon</div>
+<div style="font-size:15px;font-weight:600;color:#5B665F">Friday, Sep 25 · payday in 7 days</div>
+</div>
+<div style="display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:16px">
+<div style="grid-column:span 5;grid-row:span 2;background:#D9F2E3;border-radius:28px;padding:28px;display:flex;flex-direction:column;gap:8px">
+<div style="font-size:16px;font-weight:700;color:#1F6B47">Left to spend</div>
+<div style="font-size:112px;font-weight:800;letter-spacing:-0.05em;line-height:.95;color:#0E3B2B">$338</div>
+<div style="font-size:17px;font-weight:500;color:#2C5A45;text-wrap:pretty;max-width:360px">About $56 a day for the next 6 days. Bills, debt and savings are already set aside.</div>
+<div style="flex:1;min-height:24px"></div>
+<div style="display:flex;flex-direction:column;gap:8px;background:rgba(255,255,255,.55);border-radius:18px;padding:14px 16px">
+<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:600;color:#2C5A45"><span>September · day 25 of 30</span><span>66% of plan used</span></div>
+<div style="height:10px;border-radius:999px;background:#FFFFFF;overflow:hidden"><div style="height:100%;width:66%;border-radius:999px;background:#1F8A5B"></div></div>
+</div>
+</div>
+<div style="grid-column:span 4;background:#FFF0C2;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:6px">
+<span style="align-self:flex-start;font-size:12px;font-weight:800;letter-spacing:.05em;background:#15201B;color:#FFF0C2;border-radius:999px;padding:5px 10px">DUE TOMORROW</span>
+<div style="display:flex;justify-content:space-between;align-items:baseline;margin-top:8px"><span style="font-size:22px;font-weight:700">Electric</span><span style="font-size:34px;font-weight:800;letter-spacing:-0.03em">$85</span></div>
+<div style="font-size:14px;font-weight:500;color:#6B5A1E">2 more this month · $41</div>
+</div>
+<div style="grid-column:span 3;background:#DCEBFB;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:6px">
+<span style="font-size:14px;font-weight:700;color:#28527E">Next payday</span>
+<span style="font-size:34px;font-weight:800;letter-spacing:-0.03em;margin-top:4px">Oct 2</span>
+<span style="font-size:14px;font-weight:500;color:#28527E">$1,477 · in 7 days</span>
+</div>
+<div style="grid-column:span 4;background:#E9E3FB;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:14px;font-weight:700;color:#4C3D8F">Debt</span><span style="font-size:13px;font-weight:600;color:#4C3D8F">free by Mar 2031</span></div>
+<span style="font-size:34px;font-weight:800;letter-spacing:-0.03em">$25,100</span>
+<div style="height:10px;border-radius:999px;background:#FFFFFF;overflow:hidden"><div style="height:100%;width:34%;border-radius:999px;background:#6A55C9"></div></div>
+<span style="font-size:13px;font-weight:600;color:#4C3D8F">34% paid off</span>
+</div>
+<div style="grid-column:span 3;background:#FFE3D6;border-radius:28px;padding:22px 24px;display:flex;flex-direction:column;gap:8px">
+<span style="font-size:14px;font-weight:700;color:#8C3F1F">Savings</span>
+<span style="font-size:34px;font-weight:800;letter-spacing:-0.03em">$1,720</span>
+<div style="height:10px;border-radius:999px;background:#FFFFFF;overflow:hidden"><div style="height:100%;width:34%;border-radius:999px;background:#D9643A"></div></div>
+<span style="font-size:13px;font-weight:600;color:#8C3F1F">of $5,100 · 3 goals</span>
+</div>
+<div style="grid-column:span 7;background:#FFFFFF;border:1px solid #EEEBE4;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:800;letter-spacing:-0.02em">Where it’s going</span><span style="font-size:15px;font-weight:600;color:#5B665F">$536 of $810</span></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+<div style="background:{{ c.pastel }};border-radius:18px;padding:14px 16px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:16px;font-weight:700">{{ c.name }}</span><span style="font-size:14px;font-weight:700;color:{{ c.leftColor }}">{{ c.leftTxt }}</span></div>
+<div style="height:14px;border-radius:999px;background:#FFFFFF;overflow:hidden;display:flex"><div style="height:100%;width:{{ c.w }};border-radius:999px;background:{{ c.color }}"></div></div>
+<sc-if value="{{ c.over }}" hint-placeholder-val="{{ false }}"><div style="height:6px;border-radius:999px;background:repeating-linear-gradient(-45deg,#C2462E 0 4px,#E48C75 4px 8px);width:{{ c.overW }}"></div></sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="grid-column:span 5;background:#FFFFFF;border:1px solid #EEEBE4;border-radius:28px;padding:24px;display:flex;flex-direction:column;gap:16px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:22px;font-weight:800;letter-spacing:-0.02em">Spending over time</span><span style="font-size:14px;font-weight:600;color:#5B665F">By day</span></div>
+<div style="height:220px;display:flex;align-items:flex-end;gap:4px;background:#F6F4EF;border-radius:18px;padding:14px">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;height:{{ b.h }};min-height:4px;border-radius:6px;background:{{ b.aColor }}"></div></sc-for>
+</div>
+<div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#5B665F"><span>Sep 1</span><span>Sep 15</span><span>Sep 30</span></div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1b" style="width:1200px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="background:#22211E;color:#FFFFFF;border-radius:10px;padding:6px 12px;font-size:16px;font-weight:700">1b</span><span style="font-size:20px;font-weight:600">Night focus — dark, one bright accent</span><span style="font-size:15px;color:#6A675F">Low glare. Only what matters right now is lit up.</span></div>
+<div style="background:#111312;border-radius:28px;padding:28px 32px 36px;font-family:'Geist',sans-serif;color:#EDEFEA;display:flex;flex-direction:column;gap:22px;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+<div style="display:flex;align-items:center;gap:16px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:12px;height:12px;border-radius:50%;background:#C6F36B;box-shadow:0 0 0 6px rgba(198,243,107,.15)"></span><span style="font-size:19px;font-weight:600;letter-spacing:-0.01em">Steady</span></div>
+<div style="display:flex;gap:2px;margin-left:20px;background:#1B1E1C;border-radius:12px;padding:4px">
+<span style="border-radius:9px;padding:9px 16px;font-size:14px;font-weight:600;background:#2A2E2B;color:#EDEFEA">Home</span>
+<span style="border-radius:9px;padding:9px 16px;font-size:14px;font-weight:500;color:#8D948F">Bills</span>
+<span style="border-radius:9px;padding:9px 16px;font-size:14px;font-weight:500;color:#8D948F">Debt</span>
+<span style="border-radius:9px;padding:9px 16px;font-size:14px;font-weight:500;color:#8D948F">Goals</span>
+</div>
+<div style="flex:1"></div>
+<span style="font-family:'Geist Mono',monospace;font-size:13px;color:#8D948F">FRI 25 SEP</span>
+<button style="border:none;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:600;background:#C6F36B;color:#111312">+ Log spending</button>
+</div>
+<div style="display:grid;grid-template-columns:420px minmax(0,1fr);gap:16px">
+<div style="display:flex;flex-direction:column;gap:16px">
+<div style="background:#1B1E1C;border-radius:22px;padding:26px;display:flex;flex-direction:column;gap:10px">
+<div style="font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.06em;color:#C6F36B">LEFT TO SPEND</div>
+<div style="font-size:96px;font-weight:600;letter-spacing:-0.05em;line-height:1">$338</div>
+<div style="font-size:16px;color:#AEB4AF;text-wrap:pretty">About <span style="color:#EDEFEA;font-weight:600">$56 a day</span> until September ends. Bills, debt and savings are set aside.</div>
+<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">
+<div style="display:flex;justify-content:space-between;font-family:'Geist Mono',monospace;font-size:12px;color:#8D948F"><span>DAY 25 / 30</span><span>6 DAYS LEFT</span></div>
+<div style="display:grid;grid-template-columns:repeat(30,1fr);gap:3px">
+<sc-for list="{{ ticks }}" as="t" hint-placeholder-count="30"><span style="height:18px;border-radius:3px;background:{{ t.bg }}"></span></sc-for>
+</div>
+</div>
+</div>
+<div style="background:#1B1E1C;border-radius:22px;padding:22px 24px;display:flex;flex-direction:column;gap:4px">
+<div style="font-family:'Geist Mono',monospace;font-size:13px;letter-spacing:.06em;color:#8D948F;padding-bottom:8px">UP NEXT</div>
+<sc-for list="{{ upNext }}" as="u" hint-placeholder-count="4">
+<div style="display:flex;align-items:center;gap:14px;padding:11px 0;border-top:1px solid #262A27">
+<span style="font-family:'Geist Mono',monospace;font-size:12px;width:64px;color:{{ u.whenColorDark }}">{{ u.when }}</span>
+<span style="flex:1;font-size:16px;font-weight:500">{{ u.name }}</span>
+<span style="font-family:'Geist Mono',monospace;font-size:15px;color:{{ u.amtColorDark }}">{{ u.amt }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+<div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px">
+<div style="background:#1B1E1C;border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.06em;color:#8D948F">SPENT</span><span style="font-size:30px;font-weight:600;letter-spacing:-0.03em">$536</span><span style="font-size:14px;color:#8D948F">of $810 planned</span></div>
+<div style="background:#1B1E1C;border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.06em;color:#8D948F">DEBT</span><span style="font-size:30px;font-weight:600;letter-spacing:-0.03em">$25,100</span><span style="font-size:14px;color:#8D948F">34% paid · free Mar 2031</span></div>
+<div style="background:#1B1E1C;border-radius:22px;padding:20px 22px;display:flex;flex-direction:column;gap:6px"><span style="font-family:'Geist Mono',monospace;font-size:12px;letter-spacing:.06em;color:#8D948F">SAVED</span><span style="font-size:30px;font-weight:600;letter-spacing:-0.03em">$1,720</span><span style="font-size:14px;color:#8D948F">of $5,100 · 3 goals</span></div>
+</div>
+<div style="background:#1B1E1C;border-radius:22px;padding:22px 24px;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-size:18px;font-weight:600">Spending over time</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8D948F">SEP 1 — 30</span></div>
+<div style="height:170px;display:flex;align-items:flex-end;gap:5px;border-bottom:1px solid #2A2E2B">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;height:{{ b.h }};min-height:2px;border-radius:3px 3px 0 0;background:{{ b.bColor }}"></div></sc-for>
+</div>
+</div>
+<div style="background:#1B1E1C;border-radius:22px;padding:22px 24px;display:flex;flex-direction:column;gap:2px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:10px"><span style="font-size:18px;font-weight:600">Where it’s going</span><span style="font-family:'Geist Mono',monospace;font-size:12px;color:#8D948F">$536 / $810</span></div>
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+<div style="display:grid;grid-template-columns:130px minmax(0,1fr) 110px;gap:16px;align-items:center;padding:9px 0">
+<span style="font-size:15px;font-weight:500">{{ c.name }}</span>
+<div style="height:6px;border-radius:999px;background:#2A2E2B;display:flex;overflow:hidden"><div style="height:100%;width:{{ c.w }};background:{{ c.darkBar }};border-radius:999px"></div></div>
+<span style="font-family:'Geist Mono',monospace;font-size:13px;text-align:right;color:{{ c.darkLeft }}">{{ c.leftTxt }}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1c" style="width:1200px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="background:#22211E;color:#FFFFFF;border-radius:10px;padding:6px 12px;font-size:16px;font-weight:700">1c</span><span style="font-size:20px;font-weight:600">Paper — editorial and quiet</span><span style="font-size:15px;color:#6A675F">Reads like a short letter. Almost no colour, lots of breathing room.</span></div>
+<div style="background:#F3EEE4;border-radius:6px;padding:36px 48px 48px;font-family:'Instrument Sans',sans-serif;color:#1D1B17;display:flex;flex-direction:column;gap:0;box-shadow:0 20px 60px rgba(0,0,0,.08)">
+<div style="display:flex;align-items:center;gap:28px;padding-bottom:18px;border-bottom:1px solid #1D1B17">
+<span style="font-family:'Instrument Serif',serif;font-size:32px;letter-spacing:-0.01em">Steady</span>
+<div style="display:flex;gap:22px;font-size:15px;font-weight:500">
+<span style="border-bottom:2px solid #1D1B17;padding-bottom:2px">Home</span><span style="color:#6E675B">Bills</span><span style="color:#6E675B">Debt</span><span style="color:#6E675B">Goals</span>
+</div>
+<div style="flex:1"></div>
+<button style="border:1px solid #1D1B17;border-radius:999px;padding:11px 20px;font-size:15px;font-weight:600;background:#1D1B17;color:#F3EEE4">Log spending</button>
+</div>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #D8D0C0;font-size:14px;color:#6E675B"><span>Friday, 25 September</span><span>September budget · 6 days left</span></div>
+<div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:56px;padding:40px 0 36px;border-bottom:1px solid #D8D0C0">
+<div style="display:flex;flex-direction:column;gap:6px">
+<div style="font-family:'Instrument Serif',serif;font-style:italic;font-size:26px;color:#6E675B">You have</div>
+<div style="font-family:'Instrument Serif',serif;font-size:168px;line-height:.85;letter-spacing:-0.04em">$338</div>
+<div style="font-family:'Instrument Serif',serif;font-size:30px;line-height:1.2;max-width:560px;margin-top:14px;text-wrap:pretty">left to spend this month. That’s about $56 a day, with bills, debt and savings already taken care of.</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:0;padding-top:12px">
+<div style="font-size:12px;font-weight:700;letter-spacing:.1em;color:#6E675B;padding-bottom:10px">HOW WE GOT THERE</div>
+<sc-for list="{{ math }}" as="m" hint-placeholder-count="5">
+<div style="display:flex;justify-content:space-between;padding:10px 0;border-top:1px solid #D8D0C0;font-size:16px"><span style="color:#4A453C">{{ m.label }}</span><span style="font-variant-numeric:tabular-nums">{{ m.val }}</span></div>
+</sc-for>
+<div style="display:flex;justify-content:space-between;padding:12px 0;border-top:1px solid #1D1B17;font-size:17px;font-weight:700"><span>Left to spend</span><span>$338</span></div>
+</div>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.4fr) minmax(0,1fr);gap:0;padding-top:28px">
+<div style="display:flex;flex-direction:column;padding-right:32px;border-right:1px solid #D8D0C0">
+<div style="font-family:'Instrument Serif',serif;font-size:28px;padding-bottom:12px">Coming up</div>
+<sc-for list="{{ upNext }}" as="u" hint-placeholder-count="4">
+<div style="display:flex;flex-direction:column;gap:2px;padding:12px 0;border-top:1px solid #D8D0C0">
+<div style="display:flex;justify-content:space-between;font-size:16px;font-weight:600"><span>{{ u.name }}</span><span style="color:{{ u.amtColorPaper }}">{{ u.amt }}</span></div>
+<span style="font-size:13px;color:{{ u.whenColorPaper }}">{{ u.whenLong }}</span>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;padding:0 32px;border-right:1px solid #D8D0C0">
+<div style="display:flex;justify-content:space-between;align-items:baseline;padding-bottom:12px"><span style="font-family:'Instrument Serif',serif;font-size:28px">Where it’s going</span><span style="font-size:14px;color:#6E675B">$536 of $810</span></div>
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;gap:8px;padding:12px 0;border-top:1px solid #D8D0C0">
+<div style="display:flex;justify-content:space-between;font-size:16px"><span style="font-weight:600">{{ c.name }}</span><span style="color:{{ c.paperLeft }};font-style:{{ c.paperStyle }}">{{ c.leftTxt }}</span></div>
+<div style="height:3px;background:#DDD5C6;display:flex"><div style="height:100%;width:{{ c.w }};background:#1D1B17"></div><div style="height:100%;width:{{ c.overW }};background:#B4532A"></div></div>
+</div>
+</sc-for>
+</div>
+<div style="display:flex;flex-direction:column;gap:22px;padding-left:32px">
+<div style="font-family:'Instrument Serif',serif;font-size:28px">The long game</div>
+<div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid #D8D0C0"><span style="font-size:13px;font-weight:700;letter-spacing:.08em;color:#6E675B">DEBT</span><span style="font-family:'Instrument Serif',serif;font-size:44px;line-height:1">$25,100</span><span style="font-size:14px;color:#4A453C">34% paid off. Debt-free by March 2031.</span></div>
+<div style="display:flex;flex-direction:column;gap:4px;padding-top:12px;border-top:1px solid #D8D0C0"><span style="font-size:13px;font-weight:700;letter-spacing:.08em;color:#6E675B">SAVED</span><span style="font-family:'Instrument Serif',serif;font-size:44px;line-height:1">$1,720</span><span style="font-size:14px;color:#4A453C">Of $5,100 across three goals.</span></div>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:14px;margin-top:36px;padding-top:24px;border-top:1px solid #D8D0C0">
+<div style="display:flex;justify-content:space-between;align-items:baseline"><span style="font-family:'Instrument Serif',serif;font-size:28px">Day by day</span><span style="font-size:14px;color:#6E675B">Busiest day: Sep 17, $48</span></div>
+<div style="height:110px;display:flex;align-items:flex-end;gap:8px;border-bottom:1px solid #1D1B17">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;height:{{ b.h }};min-height:1px;background:{{ b.cColor }}"></div></sc-for>
+</div>
+</div>
+</div>
+</div>
+
+<div id="1d" style="width:1200px;flex-shrink:0;display:flex;flex-direction:column;gap:14px">
+<div style="display:flex;align-items:center;gap:12px"><span style="background:#22211E;color:#FFFFFF;border-radius:10px;padding:6px 12px;font-size:16px;font-weight:700">1d</span><span style="font-size:20px;font-weight:600">One thing at a time — guided focus</span><span style="font-size:15px;color:#6A675F">Lexend (built for easy reading). Details stay folded until you open them.</span></div>
+<div style="background:#EEF2FA;border-radius:28px;padding:28px 32px 44px;font-family:'Lexend',sans-serif;color:#1A2240;display:flex;flex-direction:column;gap:28px;box-shadow:0 20px 60px rgba(0,0,0,.08)">
+<div style="display:flex;align-items:center;gap:16px">
+<div style="display:flex;align-items:center;gap:10px"><span style="width:34px;height:34px;border-radius:50%;background:#3355D1;display:flex;align-items:center;justify-content:center"><span style="width:12px;height:12px;border-radius:50%;background:#FFFFFF"></span></span><span style="font-size:19px;font-weight:600">Steady</span></div>
+<div style="flex:1"></div>
+<div style="display:flex;gap:6px;background:#FFFFFF;border-radius:999px;padding:5px">
+<span style="border-radius:999px;padding:10px 20px;font-size:15px;font-weight:500;background:#3355D1;color:#FFFFFF">Home</span>
+<span style="border-radius:999px;padding:10px 20px;font-size:15px;color:#4B5579">Bills</span>
+<span style="border-radius:999px;padding:10px 20px;font-size:15px;color:#4B5579">Debt</span>
+<span style="border-radius:999px;padding:10px 20px;font-size:15px;color:#4B5579">Goals</span>
+</div>
+<div style="flex:1"></div>
+<button style="border:none;border-radius:999px;padding:13px 22px;font-size:15px;font-weight:600;background:#1A2240;color:#FFFFFF">+ Log spending</button>
+</div>
+<div style="max-width:720px;width:100%;margin:0 auto;display:flex;flex-direction:column;gap:16px">
+<div style="background:#FFFFFF;border-radius:32px;padding:32px;display:flex;align-items:center;gap:32px">
+<div style="width:210px;height:210px;border-radius:50%;background:conic-gradient(#3355D1 0 66%,#DCE4F5 66% 100%);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+<div style="width:170px;height:170px;border-radius:50%;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">
+<span style="font-size:52px;font-weight:600;letter-spacing:-0.03em;line-height:1">$338</span>
+<span style="font-size:14px;color:#4B5579">left to spend</span>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;gap:10px">
+<span style="align-self:flex-start;font-size:13px;font-weight:600;background:#E2F5EA;color:#1D6B43;border-radius:999px;padding:6px 12px">You’re on track</span>
+<div style="font-size:26px;font-weight:500;line-height:1.3;text-wrap:pretty">About $56 a day for the next 6 days.</div>
+<div style="font-size:15px;color:#4B5579;line-height:1.5;text-wrap:pretty">You’ve used $536 of your $810 plan. Bills, debt and savings are already set aside.</div>
+</div>
+</div>
+<div style="background:#FFF4E0;border-radius:24px;padding:20px 24px;display:flex;align-items:center;gap:18px">
+<span style="width:48px;height:48px;border-radius:16px;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0"><span style="font-size:10px;font-weight:600;color:#A2621A">SEP</span><span style="font-size:19px;font-weight:600;line-height:1">26</span></span>
+<div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:600;color:#A2621A">HEADS UP</span><span style="font-size:18px;font-weight:500">Electric bill, $85, is due tomorrow</span></div>
+<button style="border:none;border-radius:999px;padding:12px 18px;font-size:15px;font-weight:600;background:#1A2240;color:#FFFFFF">Mark paid</button>
+</div>
+<div style="display:flex;gap:10px;flex-wrap:wrap">
+<span style="font-size:15px;font-weight:500;background:#FFFFFF;border-radius:999px;padding:10px 16px;display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#2E9E62"></span>5 categories on track</span>
+<span style="font-size:15px;font-weight:500;background:#FFFFFF;border-radius:999px;padding:10px 16px;display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#D9573B"></span>Eating out is $20 over</span>
+<span style="font-size:15px;font-weight:500;background:#FFFFFF;border-radius:999px;padding:10px 16px;display:flex;align-items:center;gap:8px"><span style="width:10px;height:10px;border-radius:50%;background:#3355D1"></span>Payday in 7 days</span>
+</div>
+<div style="background:#FFFFFF;border-radius:24px;padding:6px 24px">
+<sc-for list="{{ rows }}" as="r" hint-placeholder-count="4">
+<div style="border-bottom:{{ r.border }}">
+<button onClick="{{ r.toggle }}" style="width:100%;background:none;border:none;padding:20px 0;display:flex;align-items:center;gap:16px;text-align:left;color:#1A2240;font-family:'Lexend',sans-serif">
+<span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:18px;font-weight:500">{{ r.title }}</span><span style="font-size:14px;color:#4B5579">{{ r.sub }}</span></span>
+<span style="width:36px;height:36px;border-radius:50%;background:#EEF2FA;display:flex;align-items:center;justify-content:center;font-size:20px;color:#3355D1">{{ r.icon }}</span>
+</button>
+<sc-if value="{{ r.isCats }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;gap:14px;padding:0 0 22px">
+<sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+<div style="display:flex;flex-direction:column;gap:8px">
+<div style="display:flex;justify-content:space-between;font-size:15px"><span style="font-weight:500">{{ c.name }}</span><span style="color:{{ c.focusLeft }}">{{ c.leftTxt }}</span></div>
+<div style="height:12px;border-radius:999px;background:#EEF2FA;display:flex;overflow:hidden"><div style="height:100%;width:{{ c.w }};background:{{ c.focusBar }};border-radius:999px"></div></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ r.isChart }}" hint-placeholder-val="{{ false }}">
+<div style="height:150px;display:flex;align-items:flex-end;gap:5px;padding:0 0 22px">
+<sc-for list="{{ bars }}" as="b" hint-placeholder-count="30"><div style="flex:1;height:{{ b.h }};min-height:4px;border-radius:6px;background:{{ b.dColor }}"></div></sc-for>
+</div>
+</sc-if>
+<sc-if value="{{ r.isLong }}" hint-placeholder-val="{{ false }}">
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:0 0 22px">
+<div style="background:#EEF2FA;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#4B5579">Debt left</span><span style="font-size:28px;font-weight:600">$25,100</span><span style="font-size:13px;color:#4B5579">Free by Mar 2031</span></div>
+<div style="background:#EEF2FA;border-radius:18px;padding:16px 18px;display:flex;flex-direction:column;gap:6px"><span style="font-size:14px;color:#4B5579">Saved</span><span style="font-size:28px;font-weight:600">$1,720</span><span style="font-size:13px;color:#4B5579">of $5,100 · 3 goals</span></div>
+</div>
+</sc-if>
+<sc-if value="{{ r.isRecent }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;flex-direction:column;padding:0 0 14px">
+<sc-for list="{{ recent }}" as="t" hint-placeholder-count="5">
+<div style="display:flex;align-items:center;gap:12px;padding:10px 0"><span style="width:10px;height:10px;border-radius:50%;background:{{ t.color }}"></span><span style="flex:1;font-size:15px">{{ t.title }}</span><span style="font-size:13px;color:#4B5579">{{ t.when }}</span><span style="font-size:15px;font-weight:500;width:56px;text-align:right">{{ t.amt }}</span></div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+
+</div>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const CATS = [
+  { name: 'Groceries', s: 251, b: 350, color: '#4E8A6B', pastel: '#EAF5EE' },
+  { name: 'Eating out', s: 140, b: 120, color: '#C0843A', pastel: '#FFF3DF' },
+  { name: 'Transport', s: 70, b: 120, color: '#4F7FB0', pastel: '#E8F0FA' },
+  { name: 'Fun', s: 38, b: 80, color: '#8A72B8', pastel: '#F0ECFA' },
+  { name: 'Shopping', s: 22, b: 80, color: '#BF6A7E', pastel: '#FBEAEE' },
+  { name: 'Other', s: 15, b: 60, color: '#8B877E', pastel: '#F1F0EC' }
+];
+const DAYS = [22, 0, 31, 18, 45, 12, 26, 0, 40, 15, 28, 9, 0, 33, 19, 24, 48, 11, 27, 20, 38, 14, 0, 21, 35];
+const UP = [
+  { name: 'Electric', amt: '$85', when: 'TMRW', whenLong: 'Due tomorrow', soon: true },
+  { name: 'Streaming', amt: '$11', when: 'SEP 28', whenLong: 'Due in 3 days' },
+  { name: 'Gym', amt: '$30', when: 'SEP 30', whenLong: 'Due in 5 days' },
+  { name: 'Payday', amt: '+$1,477', when: 'OCT 2', whenLong: 'In 7 days', pay: true }
+];
+
+class Component extends DCLogic {
+  state = { open: 'cats' };
+  renderVals() {
+    const cats = CATS.map(c => {
+      const over = c.s > c.b, left = c.b - c.s;
+      return {
+        name: c.name, color: c.color, pastel: c.pastel, over,
+        w: Math.min(100, c.s / c.b * 100) + '%',
+        overW: over ? ((c.s - c.b) / c.b * 100) + '%' : '0%',
+        leftTxt: over ? '$' + (c.s - c.b) + ' over' : '$' + left + ' left',
+        leftColor: over ? '#B23A22' : '#3E4A43',
+        darkBar: over ? '#FF8A6B' : '#C6F36B', darkLeft: over ? '#FF8A6B' : '#8D948F',
+        paperLeft: over ? '#B4532A' : '#6E675B', paperStyle: over ? 'italic' : 'normal',
+        focusBar: over ? '#D9573B' : '#3355D1', focusLeft: over ? '#C2462E' : '#4B5579'
+      };
+    });
+    const max = Math.max(...DAYS);
+    const bars = [];
+    for (let d = 1; d <= 30; d++) {
+      const v = DAYS[d - 1], fut = d > 25, today = d === 25;
+      bars.push({
+        h: fut ? '3%' : (v / max * 100) + '%',
+        aColor: fut ? '#E6E2D9' : today ? '#1F8A5B' : '#15201B',
+        bColor: fut ? '#232724' : today ? '#C6F36B' : '#4A514C',
+        cColor: fut ? '#DDD5C6' : today ? '#B4532A' : '#1D1B17',
+        dColor: fut ? '#DCE4F5' : today ? '#1A2240' : '#3355D1'
+      });
+    }
+    const ticks = [];
+    for (let d = 1; d <= 30; d++) ticks.push({ bg: d < 25 ? '#3A403C' : d === 25 ? '#C6F36B' : '#232724' });
+    const upNext = UP.map(u => ({ ...u,
+      whenColorDark: u.soon ? '#FFB86B' : u.pay ? '#C6F36B' : '#8D948F', amtColorDark: u.pay ? '#C6F36B' : '#EDEFEA',
+      whenColorPaper: u.soon ? '#B4532A' : '#6E675B', amtColorPaper: u.pay ? '#2F5D46' : '#1D1B17' }));
+    const math = [
+      { label: 'Money coming in', val: '+$3,200' }, { label: 'Bills', val: '−$1,551' },
+      { label: 'Debt payments', val: '−$475' }, { label: 'Saving for goals', val: '−$300' }, { label: 'Spent so far', val: '−$536' }
+    ];
+    const recent = [
+      { title: 'Corner market', when: 'Today', amt: '$14', color: '#4E8A6B' },
+      { title: 'Lunch', when: 'Yesterday', amt: '$18', color: '#C0843A' },
+      { title: 'Gas', when: 'Sep 23', amt: '$40', color: '#4F7FB0' },
+      { title: 'Movie', when: 'Sep 22', amt: '$15', color: '#8A72B8' },
+      { title: 'Takeout', when: 'Sep 21', amt: '$22', color: '#C0843A' }
+    ];
+    const R = [
+      ['cats', 'Where it’s going', '$536 of $810 · Eating out is over'],
+      ['chart', 'Spending over time', 'Busiest day was Sep 17'],
+      ['long', 'Debt & savings', '$25,100 to go · $1,720 saved'],
+      ['recent', 'Recent spending', 'Last: Corner market, $14 today']
+    ];
+    const rows = R.map(([id, title, sub], i) => {
+      const on = this.state.open === id;
+      return { title, sub, icon: on ? '−' : '+', border: i === R.length - 1 ? 'none' : '1px solid #E6EBF5',
+        isCats: on && id === 'cats', isChart: on && id === 'chart', isLong: on && id === 'long', isRecent: on && id === 'recent',
+        toggle: () => this.setState(s => ({ open: s.open === id ? null : id })) };
+    });
+    return { cats, bars, ticks, upNext, math, recent, rows };
+  }
+}
+</script>
+</body>
+</html>
