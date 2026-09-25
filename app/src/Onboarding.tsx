@@ -1,8 +1,8 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
-import { DEF_BUD, FREQ, PERIOD_OPTS, SUG_BILLS, SUG_DEBTS, SUG_GOALS, type Bill, type Debt, type Freq, type Goal, type ObBill, type ObDebt, type ObGoal, type Onboarding as Ob, type PeriodType } from './lib/data';
+import { DEF_BUD, FREQ, SUG_PCT, PERIOD_OPTS, SUG_BILLS, SUG_DEBTS, SUG_GOALS, type Bill, type Debt, type Freq, type Goal, type ObBill, type ObDebt, type ObGoal, type Onboarding as Ob, type PeriodType } from './lib/data';
 import { TODAY, fromIso } from './lib/dates';
-import { CUR, curOf, fmtWith, intOnly, numOnly } from './lib/money';
+import { CUR, curOf, fmtWith, intOnly, numOnly, scaled } from './lib/money';
 import { catsOf } from './lib/model';
 import { useApp, type State } from './store';
 import { H, RadioCard, primaryBg } from './ui';
@@ -26,14 +26,21 @@ const obAvailM = (o: Ob) => obIncM(o) - obBillsM(o) - obDebtsM(o) - obGoalsM(o);
 
 /**
  * Suggested category amounts (unless the user typed their own).
- * Start from the default plan (810/month across the six categories), scaled to the budget period.
- * With income entered, scale it so the plan uses at most 85% of what's available, never going above
- * the defaults and never below 20% of them. Rounded to the nearest 5.
+ * With pay entered: a share of take-home pay per category (SUG_PCT, 30% in total), scaled to the budget period.
+ * If that doesn't fit, everything shrinks evenly so the plan uses at most 90% of what's left after bills,
+ * debt payments and savings, keeping a cushion. Without pay: the default plan, in local-currency terms.
+ * Rounded to a sensible step for the currency (5 for $/£/€, 1,000 for ¥).
  */
 function obBud(o: Ob, s: State) {
-  const pf = obPf(o), incM = obIncM(o), avail = obAvailM(o) * pf, base = 810 * pf;
-  const scale = incM > 0 ? Math.max(0.2, Math.min(1, avail * 0.85 / base)) : 1, out: Record<string, string> = {};
-  catsOf(s).forEach(c => out[c.id] = o.budRaw && o.budRaw[c.id] != null ? o.budRaw[c.id] : String(Math.max(0, Math.round((DEF_BUD[c.id] || 50) * pf * scale / 5) * 5)));
+  const cur = curOf(o.currency), pf = obPf(o), incM = obIncM(o), step = scaled(cur, 5), out: Record<string, string> = {};
+  const cats = catsOf(s);
+  let raw: Record<string, number> = {};
+  if (incM > 0) {
+    cats.forEach(c => raw[c.id] = incM * (SUG_PCT[c.id] ?? .02) * pf);
+    const total = Object.values(raw).reduce((a, b) => a + b, 0), cap = Math.max(0, obAvailM(o) * pf * 0.9);
+    if (total > cap) { const k = total ? cap / total : 0; raw = Object.fromEntries(Object.entries(raw).map(([id, v]) => [id, v * k])); }
+  } else cats.forEach(c => raw[c.id] = (DEF_BUD[c.id] ?? 50) * cur.mag * pf);
+  cats.forEach(c => out[c.id] = o.budRaw && o.budRaw[c.id] != null ? o.budRaw[c.id] : String(Math.max(0, Math.round(raw[c.id] / step) * step)));
   return out;
 }
 
@@ -316,7 +323,7 @@ export function Onboarding() {
 
         {o.step === PLAN && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 22 }}>
-            {title('Plan your everyday spending', incM > 0 ? 'We’ve suggested amounts ' + unit + ' based on what’s left after bills, debt payments and savings. Change any you like.' : 'Set a rough amount ' + unit + ' for each. You can fine-tune it any time.')}
+            {title('Plan your everyday spending', incM > 0 ? 'We’ve suggested amounts ' + unit + ': about 30% of your pay for everyday spending, trimmed if needed to fit what’s left after bills, debt payments and savings. Change any you like.' : 'Set a rough amount ' + unit + ' for each. You can fine-tune it any time.')}
             <div style={{ borderRadius: 27, padding: 16, background: over ? 'var(--danger-soft)' : 'var(--accent-soft)', display: 'flex', flexDirection: 'column', gap: 12 }}>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,minmax(0,1fr))', gap: 8 }}>
                 {planStat('Available', fm(avail))}

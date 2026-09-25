@@ -1,18 +1,24 @@
 import type { CSSProperties } from 'react';
 import { FREQ } from '../lib/data';
-import { DIM, MONTH_END, MONTH_START, MONTH_TITLE, TODAY, dayName, dn, dt, fmtD, CUR_M, CUR_Y } from '../lib/dates';
-import { dueBeforeAdded, incomeMonthly, nextPayOf, occurrences, payOcc, type Occ } from '../lib/model';
+import { MONTHS_L, TODAY, dayName, dt, fmtD, monthInfo } from '../lib/dates';
+import { dueBeforeAdded, incomeMonthly, nextPayOf, occurrences, payOcc, period, type Occ } from '../lib/model';
+import { PeriodBar } from '../PeriodBar';
 import { useApp } from '../store';
 import { Bar, H, rowBorder } from '../ui';
 
 export function Bills() {
   const { s, set, f, actions } = useApp();
   const web = s.view === 'web';
+  // Bills are monthly: show the month of the selected period (the current month for the current period).
+  const pd = dt(s.offset === 0 ? TODAY : period(s, s.offset).start);
+  const mo = monthInfo(pd.getUTCFullYear(), pd.getUTCMonth() + 1), monthName = MONTHS_L[mo.m - 1];
+  // Earlier months count as paid automatically, so their ticks are read-only.
+  const canTick = mo.isCurrent;
 
   const payDays: Record<number, typeof s.incomes> = {};
-  s.incomes.forEach(inc => payOcc(inc, MONTH_START, MONTH_END).forEach(n => (payDays[n] = payDays[n] || []).push(inc)));
+  s.incomes.forEach(inc => payOcc(inc, mo.start, mo.end).forEach(n => (payDays[n] = payDays[n] || []).push(inc)));
 
-  const monthOcc = occurrences(s, MONTH_START, MONTH_END).sort((a, b) => a.n - b.n);
+  const monthOcc = occurrences(s, mo.start, mo.end).sort((a, b) => a.n - b.n);
   const unpaid = monthOcc.filter(o => !o.paid), paid = monthOcc.filter(o => o.paid);
   const total = monthOcc.reduce((a, o) => a + o.bill.amount, 0), paidAmt = paid.reduce((a, o) => a + o.bill.amount, 0);
 
@@ -23,12 +29,12 @@ export function Bills() {
     return d < 0 ? 'Overdue · was due ' + fmtD(o.n) : d === 0 ? 'Due today' : d === 1 ? 'Due tomorrow' : 'Due in ' + d + ' days · ' + fmtD(o.n);
   };
 
-  const first = dt(MONTH_START).getUTCDay();
+  const first = dt(mo.start).getUTCDay();
   const cellH = web ? 92 : 44;
 
   const billList = (list: Occ[], muted: boolean) => list.map((o, i) => (
     <div key={o.bill.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', borderBottom: rowBorder(i, list.length) }}>
-      <button onClick={() => actions.toggleBill(o.bill.id)} aria-label={o.paid ? 'Mark unpaid' : 'Mark paid'} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (o.paid ? 'var(--accent-ink)' : 'var(--line3)'), background: o.paid ? 'var(--accent)' : 'var(--surface)', color: 'var(--on)', fontSize: 16, fontWeight: 700, flexShrink: 0, padding: 0 }}>{o.paid ? '✓' : ''}</button>
+      <button onClick={() => canTick && actions.toggleBill(o.bill.id)} aria-disabled={!canTick} aria-label={o.paid ? 'Mark unpaid' : 'Mark paid'} style={{ cursor: canTick ? 'pointer' : 'default', width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (o.paid ? 'var(--accent-ink)' : 'var(--line3)'), background: o.paid ? 'var(--accent)' : 'var(--surface)', color: 'var(--on)', fontSize: 16, fontWeight: 700, flexShrink: 0, padding: 0 }}>{o.paid ? '✓' : ''}</button>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{o.bill.name}</div>
         <div style={{ fontSize: 13, fontWeight: muted ? undefined : 600, color: muted || dueBeforeAdded(s, o) ? 'var(--muted)' : o.n - TODAY <= 2 ? 'var(--warn-ink)' : 'var(--muted)' }}>{whenTxt(o)}</div>
@@ -40,17 +46,19 @@ export function Bills() {
   const legendSwatch = (bg: string, border?: string): CSSProperties => ({ width: 10, height: 10, borderRadius: 4, background: bg, border: border ? '1px solid ' + border : undefined });
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 28 }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
+      <PeriodBar />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 4 }}>
         <H size={32} tight={2}>Bills &amp; paydays</H>
         <div className="muted" style={{ fontSize: 16 }}>
-          {unpaid.length ? f(unpaid.reduce((a, o) => a + o.bill.amount, 0)) + ' left to pay this month · ' + unpaid.length + ' bill' + (unpaid.length > 1 ? 's' : '') : 'Everything is paid this month'}
+          {!mo.isCurrent ? monthName + ' · bills from past months count as paid'
+            : unpaid.length ? f(unpaid.reduce((a, o) => a + o.bill.amount, 0)) + ' left to pay this month · ' + unpaid.length + ' bill' + (unpaid.length > 1 ? 's' : '') : 'Everything is paid this month'}
         </div>
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 18, alignItems: 'flex-start' }}>
         <div className="card" style={{ flex: '1.7 1 520px', minWidth: 0, borderRadius: 32, padding: '18px 16px 14px', display: 'flex', flexDirection: 'column', gap: 10 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px 20px', padding: '0 4px 4px' }}>
-            <div style={{ fontSize: 15, fontWeight: 600 }}>{MONTH_TITLE}</div>
+            <div style={{ fontSize: 15, fontWeight: 600 }}>{mo.title}</div>
             <div style={{ flex: '0 1 300px', display: 'flex', alignItems: 'center', gap: 10 }}>
               <Bar pct={paidAmt / (total || 1) * 100} h={8} style={{ flex: 1 }} />
               <span className="muted" style={{ fontSize: 13, whiteSpace: 'nowrap' }}>Paid {f(paidAmt)} of {f(total)}</span>
@@ -61,8 +69,8 @@ export function Bills() {
               <div key={i} className="muted" style={{ fontSize: 12, fontWeight: 600, padding: '4px 0', textAlign: web ? 'left' : 'center' }}>{w}</div>
             ))}
             {Array.from({ length: first }, (_, i) => <div key={'b' + i} style={{ minHeight: cellH }} />)}
-            {Array.from({ length: DIM }, (_, i) => {
-              const d = i + 1, n = dn(CUR_Y, CUR_M, d), os = monthOcc.filter(o => o.n === n), due = os.some(o => !o.paid && !dueBeforeAdded(s, o)), isT = n === TODAY, pays = payDays[n] || [];
+            {Array.from({ length: mo.dim }, (_, i) => {
+              const d = i + 1, n = mo.start + i, os = monthOcc.filter(o => o.n === n), due = os.some(o => !o.paid && !dueBeforeAdded(s, o)), isT = n === TODAY, pays = payDays[n] || [];
               const num = (
                 <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: isT || (!web && due) ? 700 : 500, background: isT ? 'var(--ink)' : 'transparent', color: isT ? 'var(--on)' : n < TODAY ? 'var(--faint)' : 'var(--ink)', flexShrink: 0 }}>{d}</span>
               );
@@ -125,7 +133,7 @@ export function Bills() {
           <H size={22} style={{ padding: '8px 4px 0' }}>Coming up</H>
           <div className="card" style={{ borderRadius: 32, padding: '4px 20px' }}>
             {billList(unpaid, false)}
-            {!unpaid.length && <div className="muted" style={{ padding: '18px 0', fontSize: 15 }}>All paid for this month. Nice.</div>}
+            {!unpaid.length && <div className="muted" style={{ padding: '18px 0', fontSize: 15 }}>{mo.isCurrent ? 'All paid for this month. Nice.' : 'Nothing left unpaid in ' + monthName + '.'}</div>}
           </div>
           <H size={22} style={{ padding: '8px 4px 0' }}>Paid</H>
           <div className="card" style={{ borderRadius: 32, padding: '4px 20px' }}>

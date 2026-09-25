@@ -57,7 +57,10 @@ export function occurrences(s: Pick<S, 'bills' | 'paidKeys'>, a: number, b: numb
   const out: Occ[] = [], da = dt(a), db = dt(b);
   for (let y = da.getUTCFullYear(), m = da.getUTCMonth() + 1; y * 12 + m <= db.getUTCFullYear() * 12 + db.getUTCMonth() + 1; m === 12 ? (y++, m = 1) : m++) {
     const dim = new Date(Date.UTC(y, m, 0)).getUTCDate();
+    const monthStart = dn(y, m, 1);
     s.bills.forEach(bill => {
+      // A bill only exists from the month it was added.
+      if (bill.addedOn != null && monthStart < bill.addedOn - dt(bill.addedOn).getUTCDate() + 1) return;
       const n = dn(y, m, Math.min(bill.day, dim));
       if (n >= a && n <= b) out.push({ bill, n, y, m, paid: isPaid(s, bill, y, m) });
     });

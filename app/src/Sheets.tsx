@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { FORMS, PERIOD_OPTS, type PeriodType } from './lib/data';
-import { CUR, intOnly, numOnly } from './lib/money';
+import { CUR, intOnly, numOnly, scaled } from './lib/money';
 import { incomeMonthly, monthly, period, unitOf } from './lib/model';
 import { BGS, FONTS } from './lib/theme';
 import { useApp, useCats } from './store';
@@ -132,12 +132,12 @@ function FormSheet() {
   );
 }
 
-/** Message under the Available / Planned / Not planned summary. */
-function planMsg(raw: number, f: (n: number) => string) {
+/** Message under the Available / Planned / Not planned summary. `small` is the buffer size worth calling out (50 in dollar terms). */
+function planMsg(raw: number, f: (n: number) => string, small: number) {
   const left = Math.round(raw);
   if (left < 0) return 'That\'s ' + f(-left) + ' more than you have. Try trimming a category.';
   if (left === 0) return 'Every bit of your money has a job. Leaving a little unplanned gives you room for surprises.';
-  if (left <= 50) return f(left) + ' not planned — a small buffer. A bit more would make surprises easier to handle.';
+  if (left <= small) return f(left) + ' not planned — a small buffer. A bit more would make surprises easier to handle.';
   return f(left) + ' not planned — a nice cushion for surprises.';
 }
 
@@ -180,7 +180,7 @@ function BudgetSheet() {
           {stat(over ? 'Over by' : 'Not planned', f(Math.abs(avail - planned)), over ? 'var(--danger)' : 'var(--accent-ink)')}
         </div>
         <div className="bar" style={{ height: 10, background: 'var(--surface)' }}><div style={{ width: Math.min(100, avail > 0 ? planned / avail * 100 : 100) + '%', background: over ? 'var(--over-a)' : 'var(--accent)' }} /></div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: over ? 'var(--warn-ink)' : 'var(--accent-ink)' }}>{planMsg(avail - planned, f)}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: over ? 'var(--warn-ink)' : 'var(--accent-ink)' }}>{planMsg(avail - planned, f, scaled(cur, 50))}</div>
         <div className="muted" style={{ fontSize: 12 }}>Available = money coming in minus bills, debt and savings.</div>
       </div>
       <div className="muted" style={{ fontSize: 14, fontWeight: 600, paddingTop: 4 }}>Spending plan {unit}</div>

@@ -32,6 +32,8 @@ export const EXTRA_SERIES: Cat[] = [{ id: 'rent', name: 'Rent', color: 'var(--ca
 export const UNCAT: Cat = { id: '_none', name: 'Uncategorised', color: 'var(--cat-mauve)' };
 
 export const DEF_BUD: Record<string, number> = { groceries: 350, eating: 120, transport: 120, fun: 80, shopping: 80, other: 60 };
+/** Setup suggestions: share of take-home pay for each everyday category (30% in total). Categories added later get 2%. */
+export const SUG_PCT: Record<string, number> = { groceries: .11, eating: .04, transport: .06, fun: .03, shopping: .03, other: .03 };
 export const SUG_BILLS = ['Rent', 'Phone', 'Internet', 'Electric', 'Water', 'Car insurance', 'Streaming', 'Gym'];
 export const SUG_DEBTS = ['Credit card', 'Car loan', 'Student loan', 'Personal loan', 'Overdraft', 'Buy now, pay later'];
 export const SUG_GOALS = ['Emergency fund', 'Holiday', 'Christmas', 'New car', 'House deposit', 'Wedding'];

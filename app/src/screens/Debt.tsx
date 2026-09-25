@@ -1,6 +1,7 @@
 import { CUR_M, CUR_Y, monthLabel, spanTxt } from '../lib/dates';
 import { STRATS, simDebts } from '../lib/debt';
 import { monthly } from '../lib/model';
+import { CurrentOnlyNotice, PeriodBar } from '../PeriodBar';
 import { useApp } from '../store';
 import { Bar, H, RadioDot, Switch } from '../ui';
 
@@ -62,8 +63,10 @@ export function Debt() {
   const goPlan = () => { const el = document.getElementById('payoff-plan'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 28 }}>
-      <H size={32} tight={2}>Debt</H>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
+      <PeriodBar />
+      <H size={32} tight={2} style={{ paddingTop: 4 }}>Debt</H>
+      <CurrentOnlyNotice what="debt balances" />
       {!hasDebts && (
         <div className="card" style={{ borderRadius: 38, padding: '28px 24px', display: 'flex', flexDirection: 'column', gap: 8, maxWidth: 560 }}>
           <H size={24}>No debts added</H>

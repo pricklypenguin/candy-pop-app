@@ -2,7 +2,8 @@ import type { CSSProperties } from 'react';
 import { UNCAT } from '../lib/data';
 import { TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
 import { simDebts } from '../lib/debt';
-import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, nextPayOf, period, seriesOf } from '../lib/model';
+import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, period, seriesOf } from '../lib/model';
+import { PeriodBar } from '../PeriodBar';
 import { RECENT_PAGE, useApp, useCats } from '../store';
 import { Bar, Dot, H, Seg, rowBorder } from '../ui';
 
@@ -13,7 +14,6 @@ export function Home() {
   const CATS = useCats();
   const M = monthly(s);
   const P = period(s, s.offset), P0 = period(s, 0), isPast = s.offset < 0;
-  const canPrev = period(s, s.offset - 1).end >= firstDay(s);
   const inP = (t: { d: number }) => t.d >= P.start && t.d <= P.end;
   const pTx = s.txns.filter(inP).sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
   const spent = pTx.reduce((a, t) => a + t.amt, 0);
@@ -58,26 +58,14 @@ export function Home() {
     { label: 'SAVINGS', value: f(gSaved), sub: !s.goals.length ? 'No goals yet. Add one any time' : 'of ' + f(gTarget) + ' across ' + s.goals.length + ' goal' + (s.goals.length === 1 ? '' : 's'), w: Math.min(100, gSaved / gTarget * 100) + '%', track: 'var(--line)', barColor: 'var(--accent)', bg: 'var(--surface)', labelColor: 'var(--muted)', go: go('goals') }
   ];
 
-  const nextPay = Math.min(...s.incomes.map(nextPayOf).filter(x => x != null), Infinity);
-  const periodMeta = isPast ? 'Past period · ' + fmtD(P.start) + ' – ' + fmtD(P.end)
-    : 'Today is ' + WD[dt(TODAY).getUTCDay()] + ', ' + fmtD(TODAY) + (nextPay < Infinity ? ' · payday in ' + (nextPay - TODAY) + ' day' + (nextPay - TODAY === 1 ? '' : 's') : '') + ' · new period in ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's');
 
   const allRecent = [...pTx.map(t => ({ ...t, inc: false })), ...s.incomeTxns.filter(inP).map(t => ({ ...t, cat: '', inc: true }))].sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
   const recentList = allRecent.slice(0, s.recentShown);
   const moreLeft = allRecent.length - recentList.length;
-  const roundBtn: CSSProperties = { width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'var(--surface)', fontSize: 18, fontWeight: 700, color: 'var(--ink)' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button aria-label="Previous period" style={{ ...roundBtn, opacity: canPrev ? 1 : 0.35 }} onClick={() => canPrev && set(x => ({ offset: x.offset - 1, openCat: null, recentShown: RECENT_PAGE }))}>‹</button>
-          <H size={20} style={{ padding: '0 6px' }}>{P.label}</H>
-          <button aria-label="Next period" style={{ ...roundBtn, opacity: isPast ? 1 : 0.35 }} onClick={() => isPast && set(x => ({ offset: x.offset + 1, openCat: null, recentShown: RECENT_PAGE }))}>›</button>
-          {isPast && <button onClick={() => set({ offset: 0, openCat: null, recentShown: RECENT_PAGE })} style={{ marginLeft: 6, background: 'var(--surface)', color: 'var(--accent-ink)', border: '2px solid var(--bd)', boxShadow: 'var(--sh-sm)', borderRadius: 999, padding: '7px 14px', fontSize: 14, fontWeight: 700 }}>Back to now</button>}
-        </div>
-        <div className="muted" style={{ fontSize: 14 }}>{periodMeta}</div>
-      </div>
+      <PeriodBar />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
         <div className="card" style={card(38, { flex: '1 1 340px', padding: '26px 24px 22px', display: 'flex', flexDirection: 'column', gap: 6 })}>

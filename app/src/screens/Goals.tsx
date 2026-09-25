@@ -1,6 +1,7 @@
 import { monthLabel } from '../lib/dates';
 import { numOnly } from '../lib/money';
 import { leftFor, monthly, period } from '../lib/model';
+import { CurrentOnlyNotice, PeriodBar } from '../PeriodBar';
 import { CALC_DEFAULT, useApp, type Calc } from '../store';
 import { Bar, H, Seg, primaryBg } from '../ui';
 
@@ -12,8 +13,10 @@ export function Goals() {
   const gSaved = s.goals.reduce((a, g) => a + g.saved, 0), gTarget = s.goals.reduce((a, g) => a + g.target, 0) || 1;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 28 }}>
-      <H size={32} tight={2}>Goals</H>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
+      <PeriodBar />
+      <H size={32} tight={2} style={{ paddingTop: 4 }}>Goals</H>
+      <CurrentOnlyNotice what="savings goals" />
       <div className="card" style={{ borderRadius: 38, padding: 24, display: 'flex', flexDirection: 'column', gap: 6 }}>
         <div className="muted" style={{ fontSize: 16, fontWeight: 600 }}>Total saved</div>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, flexWrap: 'wrap' }}>
