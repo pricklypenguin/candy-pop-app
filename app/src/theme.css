@@ -1,0 +1,177 @@
+/* Candy Pop theme. Light is the default; dark overrides the same tokens. */
+:root {
+  --surface: #FFFFFF;
+  --on: #FFFFFF;
+  --ink: #3B1235;
+  --hink: var(--ink);
+  --accent: #FF3D8B;
+  --accent-ink: #C4115E;
+  --accent-soft: #FFD6E8;
+  --accent-softer: #FFF1F7;
+  --accent-deep: #8F1150;
+  --bd: #3B1235;
+  --sh: 5px 5px 0 #3B1235;
+  --sh-sm: 3px 3px 0 #3B1235;
+  --hero-sh: 4px 4px 0 #FFB3D4;
+  --toast-sh: 0 10px 30px rgba(34, 33, 30, .25);
+  --over-sh: -2px 0 0 var(--surface);
+  --seg-sh: 0 1px 3px rgba(34, 33, 30, .12);
+
+  --soft: #FFF0F6;
+  --soft2: #FFF7FA;
+  --mobile-bg: #FFC7DE;
+  --line: #FCE4EE;
+  --line2: #F7D6E4;
+  --line3: #EDBDD2;
+  --dot-off: #EDC6D7;
+  --toast-sub: #F3C9DC;
+  --disabled: #D3A6BC;
+  --faint: #B0829A;
+  --muted: #7E4A69;
+
+  --danger: #E0245E;
+  --danger-soft: #FFE0EA;
+  --over-a: #FF3D6E;
+  --over-b: #FF8FAE;
+  --warn: #FF9F1A;
+  --warn-ink: #A85A00;
+  --due-bg: #FFF0D1;
+  --due-ink: #7A4A00;
+  --pay-bg: #C9F2E0;
+
+  /* Home summary tiles */
+  --t1: #C9F2E0;
+  --t2: #FFF0A8;
+  --t3: #E3D4FF;
+  --t4: #FFD3C2;
+
+  /* Category colours */
+  --cat-pink: #FF3D8B;
+  --cat-orange: #FF9F1A;
+  --cat-sky: #3DA9FF;
+  --cat-grape: #9B5CFF;
+  --cat-bubblegum: #FF4F9A;
+  --cat-mauve: #C28AAE;
+  --cat-teal: #19B8C8;
+  --cat-gold: #FFB81A;
+  --cat-aqua: #1FC7A0;
+  --cat-tangerine: #FF7A2F;
+  --cat-peri: #6B7BFF;
+  --cat-lime: #C9D11A;
+  --cat-magenta: #E04FD8;
+  --cat-green: #7ACC2E;
+
+  /* Headline font: set from Settings → Customise theme */
+  --hf: 'Baloo 2', sans-serif;
+  --hw: 800;
+  --hls: -0.01em;
+  --hff: 'tnum' 1;
+  --page: repeating-linear-gradient(135deg, #FFE3EF 0 22px, #FFD2E5 22px 44px);
+}
+
+/* Dark: warm near-black, no hard shadows, softer category colours, headings slightly dimmer than pure white. */
+:root[data-theme="dark"] {
+  --surface: #2A1832;
+  --on: #1C1020;
+  --ink: #F6E6F0;
+  --hink: #EBD3E2;
+  --accent: #FF6FAE;
+  --accent-ink: #FF8DBF;
+  --accent-soft: #3D1D38;
+  --accent-softer: #2F1830;
+  --accent-deep: #FFB3D4;
+  --bd: #FF8DBF;
+  --sh: none;
+  --sh-sm: none;
+  --hero-sh: none;
+  --toast-sh: none;
+  --over-sh: none;
+
+  --soft: #22142A;
+  --soft2: #221428;
+  --mobile-bg: #130A16;
+  --line: #362340;
+  --line2: #3B2645;
+  --line3: #56405F;
+  --dot-off: #56405F;
+  --toast-sub: #6B5474;
+  --disabled: #7E6687;
+  --faint: #A08AA8;
+  --muted: #C4AFC0;
+
+  --danger: #FF7FA3;
+  --danger-soft: #40182A;
+  --over-a: #FF6B92;
+  --over-b: #C7486C;
+  --warn: #FFB547;
+  --warn-ink: #FFC266;
+  --due-bg: #3B2A1A;
+  --due-ink: #FFCB7A;
+  --pay-bg: #1E3A33;
+
+  --t1: #1E3A33;
+  --t2: #3A3418;
+  --t3: #2E2448;
+  --t4: #40261F;
+
+  --cat-pink: #FF6FAE;
+  --cat-orange: #FFB547;
+  --cat-sky: #6FC0FF;
+  --cat-grape: #B78AFF;
+  --cat-bubblegum: #FF85B8;
+  --cat-mauve: #B98FAE;
+  --cat-teal: #4FD3E0;
+  --cat-gold: #FFCB55;
+  --cat-aqua: #4FDDB9;
+  --cat-tangerine: #FF9C63;
+  --cat-peri: #98A3FF;
+  --cat-lime: #DCE24F;
+  --cat-magenta: #EC82E6;
+  --cat-green: #9BDD5C;
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--soft);
+  font-family: 'Nunito', system-ui, sans-serif;
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+button { font-family: inherit; cursor: pointer; }
+input, select { font-family: inherit; }
+a { color: var(--accent-ink); }
+a:hover { color: var(--ink); }
+button:focus-visible, select:focus-visible, input[type="range"]:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Headline + number type */
+.hl { font-family: var(--hf); font-weight: var(--hw); letter-spacing: var(--hls); font-feature-settings: var(--hff); color: var(--hink); }
+.hl2 { letter-spacing: calc(-0.02em + var(--hls)); }
+.hl3 { letter-spacing: calc(-0.03em + var(--hls)); }
+
+/* Sticker card: thick plum outline + solid offset shadow */
+.card { background: var(--surface); border: 3px solid var(--bd); box-shadow: var(--sh); }
+.muted { color: var(--muted); }
+.section-title { font-size: 22px; }
+
+.btn-soft { background: var(--soft); border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 700; color: var(--ink); }
+.btn-tonal { background: var(--accent-soft); color: var(--accent-ink); border: none; border-radius: 999px; padding: 10px 16px; font-size: 14px; font-weight: 700; flex-shrink: 0; }
+.btn-link { background: none; border: none; font-weight: 700; color: var(--accent-ink); }
+.btn-primary { border: none; border-radius: 24px; padding: 18px; font-size: 17px; font-weight: 700; color: var(--on); }
+.btn-add { background: transparent; border: 2px dashed var(--line3); font-size: 16px; font-weight: 600; color: var(--ink); }
+.btn-pop { background: var(--accent); color: var(--on); border: 3px solid var(--bd); box-shadow: var(--sh-sm); border-radius: 999px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.btn-edit { background: var(--soft); border: none; border-radius: 999px; padding: 6px 12px; font-size: 13px; font-weight: 700; color: var(--ink); flex-shrink: 0; }
+
+.seg { display: flex; gap: 2px; background: var(--soft); border-radius: 999px; padding: 4px; }
+.seg > button { border: none; border-radius: 999px; font-weight: 700; }
+
+.field { border: none; background: var(--soft); border-radius: 14px; padding: 14px 16px; font-size: 17px; color: var(--ink); outline: none; width: 100%; }
+.label-col { display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600; color: var(--muted); }
+
+.bar { border-radius: 999px; background: var(--line); overflow: hidden; }
+.bar > div { height: 100%; border-radius: 999px; }
+
+.radio-ring { border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.dot { border-radius: 50%; flex-shrink: 0; display: inline-block; }
+
+.pretty { text-wrap: pretty; }
