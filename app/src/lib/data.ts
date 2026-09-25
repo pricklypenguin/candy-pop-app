@@ -1,4 +1,4 @@
-import { CUR_D, CUR_M, CUR_Y, DAYMS, TODAY, dn, isoOf } from './dates';
+import { CUR_D, CUR_M, CUR_Y, DAYMS, HIST, TODAY, dn, isoOf } from './dates';
 
 export type Tab = 'home' | 'bills' | 'debt' | 'goals';
 export type PeriodType = 'monthly' | 'biweekly' | 'weekly' | 'custom';
@@ -9,7 +9,8 @@ export interface Cat { id: string; name: string; color: string }
 export interface Txn { id: string; amt: number; cat: string; note: string; d: number }
 export interface IncomeTxn { id: string; amt: number; note: string; d: number }
 export interface Income { id: string; name: string; amount: number; freq: Freq; anchor: number }
-export interface Bill { id: string; name: string; amount: number; day: number; group?: 'rent' }
+// addedOn: the day the bill was added. Due dates before it this month are "unknown" rather than overdue.
+export interface Bill { id: string; name: string; amount: number; day: number; group?: 'rent'; addedOn?: number }
 export interface Debt { id: string; name: string; balance: number; original: number; min: number; rate: number; skip?: boolean }
 export interface Goal { id: string; name: string; saved: number; target: number; monthly: number }
 
@@ -32,6 +33,8 @@ export const UNCAT: Cat = { id: '_none', name: 'Uncategorised', color: 'var(--ca
 
 export const DEF_BUD: Record<string, number> = { groceries: 350, eating: 120, transport: 120, fun: 80, shopping: 80, other: 60 };
 export const SUG_BILLS = ['Rent', 'Phone', 'Internet', 'Electric', 'Water', 'Car insurance', 'Streaming', 'Gym'];
+export const SUG_DEBTS = ['Credit card', 'Car loan', 'Student loan', 'Personal loan', 'Overdraft', 'Buy now, pay later'];
+export const SUG_GOALS = ['Emergency fund', 'Holiday', 'Christmas', 'New car', 'House deposit', 'Wedding'];
 
 export const FREQ: Record<Freq, { mult: number; len?: number; label: string }> = {
   weekly: { mult: 52 / 12, len: 7, label: 'Weekly' },
@@ -65,8 +68,8 @@ export const FORMS: Record<FormKind, { title: string; btn: string; note: string;
   goal: { title: 'New saving goal', btn: 'Add goal', note: 'We\'ll set the monthly amount aside before showing what\'s left to spend.', fields: [
     { k: 'name', label: 'What are you saving for?', ph: 'e.g. Holiday gifts', full: true, req: true },
     { k: 'target', label: 'How much you need', ph: '$0', num: true, req: true },
-    { k: 'monthly', label: 'Save each month', ph: '$0', num: true, req: true },
-    { k: 'saved', label: 'Already saved (optional)', ph: '$0', num: true, full: true }] },
+    { k: 'saved', label: 'Already saved (optional)', ph: '$0', num: true },
+    { k: 'monthly', label: 'Save each month', ph: '$0', num: true, req: true, full: true }] },
   income: { title: 'New income', btn: 'Add income', note: 'Regular pay is spread evenly across your budget periods, so your left to spend stays steady. Got a one-off payment? Use Log → Income instead.', fields: [
     { k: 'name', label: 'What is it?', ph: 'e.g. Paycheck, side gig', full: true, req: true },
     { k: 'amount', label: 'Amount each time', ph: '$0', num: true, req: true },
@@ -74,8 +77,8 @@ export const FORMS: Record<FormKind, { title: string; btn: string; note: string;
     { k: 'freq', label: 'How often?', full: true, req: true, choice: [['weekly', 'Weekly'], ['biweekly', 'Every 2 weeks'], ['monthly', 'Monthly']] }] }
 };
 
-// Bills whose due day has already passed this month start out as paid.
-export const autoPaid = (day: number) => day < CUR_D;
+// Sample data only: bills whose due day has already passed this month start out as paid.
+const autoPaid = (day: number) => day < CUR_D;
 export const paidKeyOf = (billId: string, y: number, m: number) => billId + ':' + y + '-' + m;
 export const paidKey = (billId: string) => paidKeyOf(billId, CUR_Y, CUR_M);
 
@@ -138,6 +141,8 @@ export function seed() {
     txns: genTxns(),
     currency: 'USD', onboarded: false, cats: BASE_CATS.slice(),
     periodType: 'monthly' as PeriodType, customStart: TODAY - 5, customLen: 10,
+    // First day the budget has data. Charts and period browsing don't go further back than this.
+    startedAt: HIST,
     excluded: ['rent'], chartMode: 'day' as 'day' | 'period', catView: 'bars' as 'bars' | 'donut',
     debtStrategy: 'avalanche' as Strategy, debtExtra: 100, showHowDebt: false
   };
@@ -146,10 +151,12 @@ export type Persisted = ReturnType<typeof seed>;
 
 // ---------- onboarding ----------
 export interface ObBill { id: string; name: string; amount: string; day: string }
+export interface ObDebt { id: string; name: string; balance: string; min: string; rate: string }
+export interface ObGoal { id: string; name: string; target: string; monthly: string; saved: string }
 export interface Onboarding {
   step: number; fresh: boolean; currency: string; incAmt: string; incFreq: Freq; incNext: string;
-  period: PeriodType | null; cStart: string; cLen: string; bills: ObBill[]; budRaw: Record<string, string> | null;
+  period: PeriodType | null; cStart: string; cLen: string; bills: ObBill[]; debts: ObDebt[]; goals: ObGoal[]; budRaw: Record<string, string> | null;
 }
 export function obFresh(): Onboarding {
-  return { step: 0, fresh: true, currency: 'USD', incAmt: '', incFreq: 'biweekly', incNext: isoOf(TODAY + 7), period: null, cStart: isoOf(TODAY), cLen: '10', bills: [], budRaw: null };
+  return { step: 0, fresh: true, currency: 'USD', incAmt: '', incFreq: 'biweekly', incNext: isoOf(TODAY + 7), period: null, cStart: isoOf(TODAY), cLen: '10', bills: [], debts: [], goals: [], budRaw: null };
 }

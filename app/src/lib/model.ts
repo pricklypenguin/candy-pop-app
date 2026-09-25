@@ -1,9 +1,9 @@
 import { BASE_CATS, BIWEEK_ANCHOR, EXTRA_SERIES, FREQ, WEEK_ANCHOR, paidKeyOf, type Bill, type Cat, type Income, type Persisted, type PeriodType } from './data';
-import { CUR_M, CUR_Y, DAYMS, MONTHS, MONTHS_L, TODAY, dn, dt, fmtD } from './dates';
+import { CUR_M, CUR_Y, DAYMS, HIST, MONTHS, MONTHS_L, TODAY, dn, dt, fmtD } from './dates';
 
 export interface Period { start: number; end: number; f: number; offset: number; label: string; short: string }
 
-type S = Pick<Persisted, 'periodType' | 'customLen' | 'customStart' | 'bills' | 'paidKeys' | 'debts' | 'goals' | 'incomes' | 'incomeTxns' | 'txns' | 'debtStrategy' | 'debtExtra' | 'cats'>;
+type S = Pick<Persisted, 'periodType' | 'customLen' | 'customStart' | 'bills' | 'paidKeys' | 'debts' | 'goals' | 'incomes' | 'incomeTxns' | 'txns' | 'debtStrategy' | 'debtExtra' | 'cats' | 'startedAt'>;
 
 export const catsOf = (s: Pick<Persisted, 'cats'>): Cat[] => s.cats && s.cats.length ? s.cats : BASE_CATS;
 export const seriesOf = (s: Pick<Persisted, 'cats'>): Cat[] => catsOf(s).concat(EXTRA_SERIES);
@@ -49,6 +49,10 @@ export function isPaid(s: Pick<S, 'paidKeys'>, bill: Bill, y: number, m: number)
 }
 
 export interface Occ { bill: Bill; n: number; y: number; m: number; paid: boolean }
+/** Unpaid, but due before the bill was added to the app — we don't know if it was paid, so it isn't "overdue". */
+export const dueBeforeAdded = (s: Pick<S, 'startedAt'>, o: Occ) => !o.paid && o.n < (o.bill.addedOn ?? s.startedAt);
+/** Earliest day worth showing in charts and period browsing. */
+export const firstDay = (s: Pick<S, 'startedAt'>) => Math.max(HIST, s.startedAt);
 export function occurrences(s: Pick<S, 'bills' | 'paidKeys'>, a: number, b: number): Occ[] {
   const out: Occ[] = [], da = dt(a), db = dt(b);
   for (let y = da.getUTCFullYear(), m = da.getUTCMonth() + 1; y * 12 + m <= db.getUTCFullYear() * 12 + db.getUTCMonth() + 1; m === 12 ? (y++, m = 1) : m++) {

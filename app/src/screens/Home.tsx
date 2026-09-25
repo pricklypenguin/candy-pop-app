@@ -1,9 +1,9 @@
 import type { CSSProperties } from 'react';
 import { UNCAT } from '../lib/data';
-import { HIST, TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
+import { TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
 import { simDebts } from '../lib/debt';
-import { incomeMonthly, monthly, occurrences, oneOffIn, nextPayOf, period, seriesOf } from '../lib/model';
-import { useApp, useCats } from '../store';
+import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, nextPayOf, period, seriesOf } from '../lib/model';
+import { RECENT_PAGE, useApp, useCats } from '../store';
 import { Bar, Dot, H, Seg, rowBorder } from '../ui';
 
 const card = (radius: number, extra?: CSSProperties): CSSProperties => ({ borderRadius: radius, ...extra });
@@ -11,10 +11,9 @@ const card = (radius: number, extra?: CSSProperties): CSSProperties => ({ border
 export function Home() {
   const { s, set, f, actions } = useApp();
   const CATS = useCats();
-  const web = s.view === 'web';
   const M = monthly(s);
   const P = period(s, s.offset), P0 = period(s, 0), isPast = s.offset < 0;
-  const canPrev = period(s, s.offset - 1).end >= HIST;
+  const canPrev = period(s, s.offset - 1).end >= firstDay(s);
   const inP = (t: { d: number }) => t.d >= P.start && t.d <= P.end;
   const pTx = s.txns.filter(inP).sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
   const spent = pTx.reduce((a, t) => a + t.amt, 0);
@@ -34,7 +33,7 @@ export function Home() {
   const safeTxt = f(Math.abs(isPast ? left : Math.max(0, left)));
 
   // Summary tiles
-  const upcoming = occurrences(s, TODAY - 31, TODAY + 45).filter(o => !o.paid).sort((a, b) => a.n - b.n);
+  const upcoming = occurrences(s, TODAY - 31, TODAY + 45).filter(o => !o.paid && !dueBeforeAdded(s, o)).sort((a, b) => a.n - b.n);
   const next = upcoming[0];
   const relDay = (n: number) => { const d = n - TODAY; return d < 0 ? 'Overdue' : d === 0 ? 'Today' : d === 1 ? 'Tomorrow' : 'In ' + d + ' days'; };
   const debtTotal = s.debts.reduce((a, d) => a + d.balance, 0), debtOrig = s.debts.reduce((a, d) => a + d.original, 0) || 1;
@@ -63,17 +62,19 @@ export function Home() {
   const periodMeta = isPast ? 'Past period · ' + fmtD(P.start) + ' – ' + fmtD(P.end)
     : 'Today is ' + WD[dt(TODAY).getUTCDay()] + ', ' + fmtD(TODAY) + (nextPay < Infinity ? ' · payday in ' + (nextPay - TODAY) + ' day' + (nextPay - TODAY === 1 ? '' : 's') : '') + ' · new period in ' + daysLeft + ' day' + (daysLeft === 1 ? '' : 's');
 
-  const recentList = [...pTx.map(t => ({ ...t, inc: false })), ...s.incomeTxns.filter(inP).map(t => ({ ...t, cat: '', inc: true }))].sort((a, b) => b.d - a.d).slice(0, web ? 8 : 5);
+  const allRecent = [...pTx.map(t => ({ ...t, inc: false })), ...s.incomeTxns.filter(inP).map(t => ({ ...t, cat: '', inc: true }))].sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
+  const recentList = allRecent.slice(0, s.recentShown);
+  const moreLeft = allRecent.length - recentList.length;
   const roundBtn: CSSProperties = { width: 36, height: 36, borderRadius: '50%', border: 'none', background: 'var(--surface)', fontSize: 18, fontWeight: 700, color: 'var(--ink)' };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <button aria-label="Previous period" style={{ ...roundBtn, opacity: canPrev ? 1 : 0.35 }} onClick={() => canPrev && set(x => ({ offset: x.offset - 1, openCat: null }))}>‹</button>
+          <button aria-label="Previous period" style={{ ...roundBtn, opacity: canPrev ? 1 : 0.35 }} onClick={() => canPrev && set(x => ({ offset: x.offset - 1, openCat: null, recentShown: RECENT_PAGE }))}>‹</button>
           <H size={20} style={{ padding: '0 6px' }}>{P.label}</H>
-          <button aria-label="Next period" style={{ ...roundBtn, opacity: isPast ? 1 : 0.35 }} onClick={() => isPast && set(x => ({ offset: x.offset + 1, openCat: null }))}>›</button>
-          {isPast && <button onClick={() => set({ offset: 0, openCat: null })} style={{ marginLeft: 6, background: 'var(--accent-soft)', color: 'var(--accent-ink)', border: 'none', borderRadius: 999, padding: '8px 14px', fontSize: 14, fontWeight: 700 }}>Back to now</button>}
+          <button aria-label="Next period" style={{ ...roundBtn, opacity: isPast ? 1 : 0.35 }} onClick={() => isPast && set(x => ({ offset: x.offset + 1, openCat: null, recentShown: RECENT_PAGE }))}>›</button>
+          {isPast && <button onClick={() => set({ offset: 0, openCat: null, recentShown: RECENT_PAGE })} style={{ marginLeft: 6, background: 'var(--surface)', color: 'var(--accent-ink)', border: '2px solid var(--bd)', boxShadow: 'var(--sh-sm)', borderRadius: 999, padding: '7px 14px', fontSize: 14, fontWeight: 700 }}>Back to now</button>}
         </div>
         <div className="muted" style={{ fontSize: 14 }}>{periodMeta}</div>
       </div>
@@ -126,7 +127,10 @@ export function Home() {
         </div>
 
         <div style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column', gap: 4, minWidth: 0 }}>
-          <H size={22} style={{ padding: '0 4px 8px' }}>{isPast ? 'Transactions' : 'Recent'}</H>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2, padding: '0 4px 8px' }}>
+            <H size={22}>{isPast ? 'Transactions' : 'Recent'}</H>
+            <div className="muted" style={{ fontSize: 14 }}>{allRecent.length ? 'Showing ' + recentList.length + ' of ' + allRecent.length + ' transaction' + (allRecent.length === 1 ? '' : 's') + ' this period' : 'No transactions this period'}</div>
+          </div>
           <div className="card" style={{ borderRadius: 32, padding: '4px 20px' }}>
             {recentList.map((t, i) => {
               const border = rowBorder(i, recentList.length);
@@ -143,6 +147,12 @@ export function Home() {
               );
             })}
             {!recentList.length && <div className="muted" style={{ padding: '16px 0', fontSize: 15 }}>Nothing logged in this period.</div>}
+            {(moreLeft > 0 || recentList.length > RECENT_PAGE) && (
+              <div style={{ display: 'flex', gap: 16, borderTop: '1px solid var(--line)', padding: '4px 0' }}>
+                {moreLeft > 0 && <button className="btn-link" onClick={() => set(x => ({ recentShown: x.recentShown + RECENT_PAGE }))} style={{ padding: '12px 0', fontSize: 14 }}>Show {Math.min(RECENT_PAGE, moreLeft)} more</button>}
+                {recentList.length > RECENT_PAGE && <button className="btn-link" onClick={() => set({ recentShown: RECENT_PAGE })} style={{ padding: '12px 0', fontSize: 14, color: 'var(--muted)' }}>Show less</button>}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -227,7 +237,7 @@ function SpendingChart() {
   const bucket = (a: number, b: number) => {
     const map: Record<number, Record<string, number>> = {};
     s.txns.forEach(t => { if (t.d >= a && t.d <= b) { const m = (map[t.d] = map[t.d] || {}); m[t.cat] = (m[t.cat] || 0) + t.amt; } });
-    occurrences(s, a, Math.min(b, TODAY)).forEach(o => { const g = o.bill.group === 'rent' ? 'rent' : 'bills', m = (map[o.n] = map[o.n] || {}); m[g] = (m[g] || 0) + o.bill.amount; });
+    occurrences(s, Math.max(a, s.startedAt), Math.min(b, TODAY)).forEach(o => { const g = o.bill.group === 'rent' ? 'rent' : 'bills', m = (map[o.n] = map[o.n] || {}); m[g] = (m[g] || 0) + o.bill.amount; });
     return map;
   };
   const raw: { total: number; future: boolean; title: string; label: string }[] = [];
@@ -239,7 +249,7 @@ function SpendingChart() {
     }
   } else {
     for (let o = P.offset - 5; o <= P.offset; o++) {
-      const Q = period(s, o); if (Q.end < HIST) continue;
+      const Q = period(s, o); if (Q.end < firstDay(s)) continue;
       const tot: Record<string, number> = {};
       Object.values(bucket(Q.start, Q.end)).forEach(day => Object.keys(day).forEach(k => tot[k] = (tot[k] || 0) + day[k]));
       raw.push({ total: sumOf(tot), future: false, title: Q.label, label: Q.short });
@@ -250,7 +260,7 @@ function SpendingChart() {
   const gap = raw.length > 20 ? 3 : 8;
   const sub = s.chartMode === 'day'
     ? f(raw.reduce((a, r) => a + r.total, 0)) + ' in this period' + (s.excluded.length ? ' · ' + s.excluded.length + ' hidden' : '')
-    : 'Last ' + raw.length + ' periods · avg ' + f(Math.round(raw.reduce((a, r) => a + r.total, 0) / (raw.length || 1)));
+    : (raw.length === 1 ? 'This period' : 'Last ' + raw.length + ' periods') + ' · avg ' + f(Math.round(raw.reduce((a, r) => a + r.total, 0) / (raw.length || 1)));
   const axisLbl: CSSProperties = { position: 'absolute', right: 0, fontSize: 11, color: 'var(--muted)', background: 'var(--surface)', paddingLeft: 4 };
 
   return (

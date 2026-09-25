@@ -50,7 +50,10 @@ export function Goals() {
             </div>
           );
         })}
-        <button className="btn-add" onClick={() => actions.open({ mode: 'form', kind: 'goal' })} style={{ borderRadius: 32, padding: 20, minHeight: 72 }}>+ Add a saving goal</button>
+        <button className="btn-add" onClick={() => actions.open({ mode: 'form', kind: 'goal' })} style={{ borderRadius: 32, padding: 20, minHeight: 72, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
+          <span>+ Add a saving goal</span>
+          <span className="muted" style={{ fontSize: 14, fontWeight: 600 }}>or use the planner below</span>
+        </button>
       </div>
 
       <GoalPlanner />

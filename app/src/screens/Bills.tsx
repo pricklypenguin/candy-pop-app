@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import { FREQ } from '../lib/data';
 import { DIM, MONTH_END, MONTH_START, MONTH_TITLE, TODAY, dayName, dn, dt, fmtD, CUR_M, CUR_Y } from '../lib/dates';
-import { incomeMonthly, nextPayOf, occurrences, payOcc, type Occ } from '../lib/model';
+import { dueBeforeAdded, incomeMonthly, nextPayOf, occurrences, payOcc, type Occ } from '../lib/model';
 import { useApp } from '../store';
 import { Bar, H, rowBorder } from '../ui';
 
@@ -19,6 +19,7 @@ export function Bills() {
   const whenTxt = (o: Occ) => {
     if (o.paid) return 'Paid · ' + fmtD(o.n);
     const d = o.n - TODAY;
+    if (dueBeforeAdded(s, o)) return 'Was due ' + fmtD(o.n) + ', before you added it · tick if paid';
     return d < 0 ? 'Overdue · was due ' + fmtD(o.n) : d === 0 ? 'Due today' : d === 1 ? 'Due tomorrow' : 'Due in ' + d + ' days · ' + fmtD(o.n);
   };
 
@@ -30,7 +31,7 @@ export function Bills() {
       <button onClick={() => actions.toggleBill(o.bill.id)} aria-label={o.paid ? 'Mark unpaid' : 'Mark paid'} style={{ width: 32, height: 32, borderRadius: '50%', border: '2px solid ' + (o.paid ? 'var(--accent-ink)' : 'var(--line3)'), background: o.paid ? 'var(--accent)' : 'var(--surface)', color: 'var(--on)', fontSize: 16, fontWeight: 700, flexShrink: 0, padding: 0 }}>{o.paid ? '✓' : ''}</button>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
         <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{o.bill.name}</div>
-        <div style={{ fontSize: 13, fontWeight: muted ? undefined : 600, color: muted ? 'var(--muted)' : o.n - TODAY <= 2 ? 'var(--warn-ink)' : 'var(--muted)' }}>{whenTxt(o)}</div>
+        <div style={{ fontSize: 13, fontWeight: muted ? undefined : 600, color: muted || dueBeforeAdded(s, o) ? 'var(--muted)' : o.n - TODAY <= 2 ? 'var(--warn-ink)' : 'var(--muted)' }}>{whenTxt(o)}</div>
       </div>
       <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{f(o.bill.amount)}</div>
     </div>
@@ -61,19 +62,19 @@ export function Bills() {
             ))}
             {Array.from({ length: first }, (_, i) => <div key={'b' + i} style={{ minHeight: cellH }} />)}
             {Array.from({ length: DIM }, (_, i) => {
-              const d = i + 1, n = dn(CUR_Y, CUR_M, d), os = monthOcc.filter(o => o.n === n), due = os.some(o => !o.paid), isT = n === TODAY, pays = payDays[n] || [];
+              const d = i + 1, n = dn(CUR_Y, CUR_M, d), os = monthOcc.filter(o => o.n === n), due = os.some(o => !o.paid && !dueBeforeAdded(s, o)), isT = n === TODAY, pays = payDays[n] || [];
               const num = (
                 <span style={{ width: 24, height: 24, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, fontWeight: isT || (!web && due) ? 700 : 500, background: isT ? 'var(--ink)' : 'transparent', color: isT ? 'var(--on)' : n < TODAY ? 'var(--faint)' : 'var(--ink)', flexShrink: 0 }}>{d}</span>
               );
               if (web) {
                 const chips = [
-                  ...pays.map(inc => ({ name: 'Payday ' + f(inc.amount), title: inc.name + ' · ' + f(inc.amount), bg: 'var(--pay-bg)', color: 'var(--accent-deep)' })),
-                  ...os.map(o => ({ name: o.bill.name, title: o.bill.name + ' · ' + f(o.bill.amount), bg: o.paid ? 'var(--line2)' : 'var(--due-bg)', color: o.paid ? 'var(--muted)' : 'var(--due-ink)' }))
+                  ...pays.map(inc => ({ name: 'Payday ' + f(inc.amount), title: inc.name + ' · ' + f(inc.amount), bg: 'var(--pay-bg)', color: 'var(--accent-deep)', paid: false })),
+                  ...os.map(o => { const unknown = dueBeforeAdded(s, o); return { name: o.bill.name, title: o.bill.name + ' · ' + f(o.bill.amount) + (o.paid ? ' · paid' : ''), bg: o.paid || unknown ? 'var(--line2)' : 'var(--due-bg)', color: o.paid || unknown ? 'var(--muted)' : 'var(--due-ink)', paid: o.paid }; })
                 ];
                 return (
                   <div key={d} style={{ minHeight: cellH, borderRadius: 16, background: 'var(--soft2)', padding: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, minWidth: 0 }}>
                     {num}
-                    {chips.map((c, k) => <div key={k} title={c.title} style={{ width: '100%', background: c.bg, color: c.color, fontSize: 12, fontWeight: 600, borderRadius: 8, padding: '3px 6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{c.name}</div>)}
+                    {chips.map((c, k) => <div key={k} title={c.title} style={{ width: '100%', background: c.bg, color: c.color, fontSize: 12, fontWeight: 600, borderRadius: 8, padding: '3px 6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textDecoration: c.paid ? 'line-through' : 'none' }}>{c.name}</div>)}
                   </div>
                 );
               }

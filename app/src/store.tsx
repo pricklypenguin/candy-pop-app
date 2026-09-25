@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { CAT_PALETTE, FORMS, FREQ, PERIOD_OPTS, autoPaid, obFresh, paidKey, seed, type FormKind, type Onboarding, type Persisted, type Tab } from './lib/data';
-import { TODAY, fromIso, isoOf, ord } from './lib/dates';
+import { CAT_PALETTE, FORMS, FREQ, PERIOD_OPTS, obFresh, paidKey, seed, type FormKind, type Onboarding, type Persisted, type Tab } from './lib/data';
+import { HIST, TODAY, fromIso, isoOf, ord } from './lib/dates';
 import { curOf, fmtWith } from './lib/money';
 import { catsOf, leftFor, nextPayOf, period } from './lib/model';
 import { DEFAULT_BG, DEFAULT_FONT, applyTheme, resolveDark, type ThemePref } from './lib/theme';
@@ -25,14 +25,17 @@ interface Transient {
   toast: { title: string; sub: string } | null; showBreakdown: boolean; openCat: string | null;
   form: Record<string, string>; offset: number; logType: 'spend' | 'income';
   confirmReset: boolean; confirmRemove: boolean; confirmCat: string | null; newCatName: string; calc: Calc | null;
+  recentShown: number;
 }
 export type State = Persisted & Prefs & Transient;
 
-const PERSIST: (keyof Persisted | keyof Prefs)[] = ['seedVer', 'theme', 'uiFont', 'uiBg', 'currency', 'onboarded', 'cats', 'tab', 'view', 'incomes', 'incomeTxns', 'budgets', 'bills', 'paidKeys', 'debts', 'goals', 'txns', 'periodType', 'customStart', 'customLen', 'excluded', 'chartMode', 'catView', 'debtStrategy', 'debtExtra', 'showHowDebt'];
+const PERSIST: (keyof Persisted | keyof Prefs)[] = ['seedVer', 'theme', 'uiFont', 'uiBg', 'currency', 'onboarded', 'cats', 'tab', 'view', 'incomes', 'incomeTxns', 'budgets', 'bills', 'paidKeys', 'debts', 'goals', 'txns', 'periodType', 'customStart', 'customLen', 'excluded', 'chartMode', 'catView', 'debtStrategy', 'debtExtra', 'showHowDebt', 'startedAt'];
+
+export const RECENT_PAGE = 8;
 
 const TRANSIENT: Omit<Transient, 'ob'> = {
   sheet: null, entry: '', note: '', selCat: 'groceries', toast: null, showBreakdown: false, openCat: null,
-  form: {}, offset: 0, logType: 'spend', confirmReset: false, confirmRemove: false, confirmCat: null, newCatName: '', calc: null
+  form: {}, offset: 0, logType: 'spend', confirmReset: false, confirmRemove: false, confirmCat: null, newCatName: '', calc: null, recentShown: RECENT_PAGE
 };
 
 function load(): State {
@@ -40,6 +43,11 @@ function load(): State {
   try { saved = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* private mode etc. */ }
   if (saved && saved.seedVer !== SEED_VER) saved = null;
   const prefs: Prefs = { tab: 'home', view: 'web', theme: 'light', uiFont: DEFAULT_FONT, uiBg: DEFAULT_BG, seedVer: SEED_VER };
+  // Data saved before startedAt existed: start from the earliest logged entry.
+  if (saved && saved.startedAt == null) {
+    const days = [...(saved.txns || []), ...(saved.incomeTxns || [])].map(t => t.d);
+    saved.startedAt = Math.max(HIST, Math.min(TODAY, ...days));
+  }
   const base = Object.assign(prefs, seed(), saved || {}, { seedVer: SEED_VER });
   return { ...base, ...TRANSIENT, ob: base.onboarded ? null : obFresh() };
 }
@@ -162,7 +170,7 @@ function useAppState() {
         toast(name + ' added', 'About ' + f(Math.round(inc.amount * FREQ[inc.freq].mult)) + ' a month');
       } else if (kind === 'bill') {
         const day = parseInt(fm.day, 10), bid = 'b' + id;
-        set(x => ({ bills: [...x.bills, { id: bid, name, amount: n('amount'), day }], paidKeys: autoPaid(day) ? [...x.paidKeys, paidKey(bid)] : x.paidKeys, sheet: null }));
+        set(x => ({ bills: [...x.bills, { id: bid, name, amount: n('amount'), day, addedOn: TODAY }], sheet: null }));
         toast(name + ' added', 'Due on the ' + day + ord(day) + ' each month');
       } else if (kind === 'debt') {
         set(x => ({ debts: [...x.debts, { id: 'd' + id, name, balance: n('balance'), original: n('balance'), min: n('min'), rate: n('rate') }], sheet: null }));
@@ -238,7 +246,9 @@ function useAppState() {
       catsOf(s).forEach(c => budRaw[c.id] = String(Math.round((s.budgets[c.id] || 0) * pf)));
       const np = inc ? nextPayOf(inc) : null;
       return { step: 1, fresh: false, currency: s.currency, incAmt: inc ? String(inc.amount) : '', incFreq: inc ? inc.freq : 'biweekly', incNext: isoOf(np != null ? np : TODAY + 7),
-        period: s.periodType, cStart: isoOf(s.customStart), cLen: String(s.customLen), bills: s.bills.map(b => ({ id: b.id, name: b.name, amount: String(b.amount), day: String(b.day) })), budRaw };
+        period: s.periodType, cStart: isoOf(s.customStart), cLen: String(s.customLen), bills: s.bills.map(b => ({ id: b.id, name: b.name, amount: String(b.amount), day: String(b.day) })),
+        debts: s.debts.map(d => ({ id: d.id, name: d.name, balance: String(d.balance), min: String(d.min), rate: d.rate ? String(d.rate) : '' })),
+        goals: s.goals.map(g => ({ id: g.id, name: g.name, target: String(g.target), monthly: String(g.monthly), saved: g.saved ? String(g.saved) : '' })), budRaw };
     }
   };
 

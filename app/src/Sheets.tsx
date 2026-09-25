@@ -132,6 +132,15 @@ function FormSheet() {
   );
 }
 
+/** Message under the Available / Planned / Not planned summary. */
+function planMsg(raw: number, f: (n: number) => string) {
+  const left = Math.round(raw);
+  if (left < 0) return 'That\'s ' + f(-left) + ' more than you have. Try trimming a category.';
+  if (left === 0) return 'Every bit of your money has a job. Leaving a little unplanned gives you room for surprises.';
+  if (left <= 50) return f(left) + ' not planned — a small buffer. A bit more would make surprises easier to handle.';
+  return f(left) + ' not planned — a nice cushion for surprises.';
+}
+
 function BudgetSheet() {
   const { s, set, f, cur, actions } = useApp();
   const CATS = useCats();
@@ -171,9 +180,7 @@ function BudgetSheet() {
           {stat(over ? 'Over by' : 'Not planned', f(Math.abs(avail - planned)), over ? 'var(--danger)' : 'var(--accent-ink)')}
         </div>
         <div className="bar" style={{ height: 10, background: 'var(--surface)' }}><div style={{ width: Math.min(100, avail > 0 ? planned / avail * 100 : 100) + '%', background: over ? 'var(--over-a)' : 'var(--accent)' }} /></div>
-        <div style={{ fontSize: 14, fontWeight: 600, color: over ? 'var(--warn-ink)' : 'var(--accent-ink)' }}>
-          {over ? 'That\'s ' + f(planned - avail) + ' more than you have. Try trimming a category.' : f(avail - planned) + ' not planned — a nice cushion for surprises.'}
-        </div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: over ? 'var(--warn-ink)' : 'var(--accent-ink)' }}>{planMsg(avail - planned, f)}</div>
         <div className="muted" style={{ fontSize: 12 }}>Available = money coming in minus bills, debt and savings.</div>
       </div>
       <div className="muted" style={{ fontSize: 14, fontWeight: 600, paddingTop: 4 }}>Spending plan {unit}</div>
@@ -276,7 +283,7 @@ function SettingsSheet() {
       <div className="muted pretty" style={{ fontSize: 14 }}>Your monthly income, bills, debt and savings get split evenly across each period, so the number stays steady.</div>
       <button className="btn-primary" aria-disabled={!lenOk} onClick={actions.saveSettings} style={{ background: primaryBg(lenOk) }}>Save</button>
       <div style={row}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Run setup again</span><span className="muted" style={{ fontSize: 13 }}>Walk through income, bills and your plan. Your spending, debts and goals stay.</span></div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Run setup again</span><span className="muted" style={{ fontSize: 13 }}>Walk through income, bills, debts, savings and your plan again. Your logged spending stays.</span></div>
         <button className="btn-tonal" onClick={() => set({ sheet: null, ob: actions.obInit() })}>Start</button>
       </div>
       <div style={row}>

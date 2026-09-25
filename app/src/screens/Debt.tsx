@@ -49,6 +49,14 @@ export function Debt() {
   const howWhy = strat === 'snowball' ? 'Why Snowball: you see debts disappear sooner, which makes it easier to stick with.' : strat === 'avalanche' ? 'Why Avalanche: you pay the least interest overall.' : 'Tip: even a small extra amount with Snowball or Avalanche can save a lot.';
   const savedM = base.months - plan.months, savedI = base.interest - plan.interest;
   const extraResult = plan.stuck ? 'A payment is too low to ever finish — try adding more.' : base.stuck ? 'Debt-free by ' + monthLabel(plan.months) + '. Minimums alone would never finish.' : savedM > 0 ? spanTxt(savedM) + ' sooner · ' + f(Math.round(savedI)) + ' less interest' : 'Same as paying the minimums';
+  // Snowball and Avalanche only differ in which debt gets the extra first.
+  const active = s.debts.filter(d => d.balance > 0);
+  const orderKey = (st: 'snowball' | 'avalanche') => simDebts(s.debts, st, extra).order.map(d => d.id).join();
+  const stratNote = active.length === 1
+    ? 'You have one debt, so Snowball and Avalanche work exactly the same. They only change which debt gets extra money first, and that makes a difference once you have two or more. The extra-money slider below still shows how much sooner you’d finish and how much interest you’d save.'
+    : active.length > 1 && orderKey('snowball') === orderKey('avalanche')
+      ? 'Right now your smallest debt is also your highest-interest one, so Snowball and Avalanche pay debts off in the same order and give the same result.'
+      : '';
   const stratName = (STRATS.find(x => x[0] === s.debtStrategy) || [])[1] || 'Payoff';
 
   const goPlan = () => { const el = document.getElementById('payoff-plan'); if (el) window.scrollTo({ top: el.getBoundingClientRect().top + window.scrollY - 90, behavior: 'smooth' }); };
@@ -151,6 +159,12 @@ export function Debt() {
                 </div>
               ))}
               <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-ink)', paddingLeft: 38 }}>{howWhy}</div>
+            </div>
+          )}
+          {stratNote && (
+            <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', background: 'var(--soft)', borderRadius: 22, padding: '14px 16px' }}>
+              <span style={{ width: 22, height: 22, borderRadius: '50%', background: 'var(--accent-soft)', color: 'var(--accent-ink)', fontSize: 13, fontWeight: 800, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>i</span>
+              <span className="pretty" style={{ fontSize: 14, lineHeight: 1.45 }}>{stratNote}</span>
             </div>
           )}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(220px,1fr))', gap: 10 }}>
