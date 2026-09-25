@@ -4,7 +4,6 @@ import { TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
 import { simDebts } from '../lib/debt';
 import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, period, seriesOf } from '../lib/model';
 import { PeriodBar } from '../PeriodBar';
-import { InOutCard } from './InOut';
 import { RECENT_PAGE, useApp, useCats } from '../store';
 import { Bar, Dot, H, Seg, rowBorder } from '../ui';
 
@@ -97,8 +96,6 @@ export function Home() {
           ))}
         </div>
       </div>
-
-      <InOutCard />
 
       <SpendingChart />
 
