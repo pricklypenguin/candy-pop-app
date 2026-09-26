@@ -1,12 +1,39 @@
-import { BASE_CATS, BIWEEK_ANCHOR, EXTRA_SERIES, FREQ, WEEK_ANCHOR, paidKeyOf, type Bill, type Cat, type Income, type Persisted, type PeriodType } from './data';
+import { BASE_CATS, BIWEEK_ANCHOR, EXTRA_SERIES, FREQ, UNCAT, WEEK_ANCHOR, live, paidKeyOf, type Bill, type Cat, type Debt, type Goal, type Income, type IncomeTxn, type Persisted, type PeriodType, type Txn } from './data';
 import { CUR_M, CUR_Y, DAYMS, HIST, MONTHS, MONTHS_L, TODAY, dn, dt, fmtD } from './dates';
 
 export interface Period { start: number; end: number; f: number; offset: number; label: string; short: string }
 
-type S = Pick<Persisted, 'periodType' | 'customLen' | 'customStart' | 'bills' | 'paidKeys' | 'debts' | 'goals' | 'incomes' | 'incomeTxns' | 'txns' | 'debtStrategy' | 'debtExtra' | 'cats' | 'startedAt'>;
+/** Round to the cent. Sums of money go through this so tiny floating-point errors never show or tip a comparison. */
+export const r2 = (n: number) => Math.round(n * 100) / 100;
 
-export const catsOf = (s: Pick<Persisted, 'cats'>): Cat[] => s.cats && s.cats.length ? s.cats : BASE_CATS;
-export const seriesOf = (s: Pick<Persisted, 'cats'>): Cat[] => catsOf(s).concat(EXTRA_SERIES);
+/** What the screens read: live records only, with debt balances, goal totals, budgets and paid ticks worked out. */
+export interface View {
+  cats: Cat[]; incomes: Income[]; incomeTxns: IncomeTxn[]; bills: Bill[]; txns: Txn[];
+  debts: Debt[]; goals: Goal[]; budgets: Record<string, number>; paidKeys: string[];
+}
+type Raw = Pick<Persisted, 'cats' | 'incomes' | 'incomeTxns' | 'bills' | 'billPaid' | 'debts' | 'debtPayments' | 'goals' | 'goalDeposits' | 'txns'>;
+
+export function buildView(raw: Raw): View {
+  const cats = live(raw.cats), ids = new Set(cats.map(c => c.id));
+  // Spending in a deleted category shows under Other (or Uncategorised). Nothing saved is rewritten.
+  const fallback = ids.has('other') ? 'other' : UNCAT.id;
+  const paid: Record<string, number> = {}, saved: Record<string, number> = {};
+  live(raw.debtPayments).forEach(p => paid[p.debtId] = (paid[p.debtId] || 0) + p.amt);
+  live(raw.goalDeposits).forEach(p => saved[p.goalId] = (saved[p.goalId] || 0) + p.amt);
+  return {
+    cats, incomes: live(raw.incomes), incomeTxns: live(raw.incomeTxns), bills: live(raw.bills),
+    txns: live(raw.txns).map(t => ids.has(t.cat) ? t : { ...t, cat: fallback }),
+    debts: live(raw.debts).map(d => ({ id: d.id, name: d.name, balance: Math.max(0, r2(d.opening - (paid[d.id] || 0))), original: d.original, min: d.min, rate: d.rate, skip: d.skip })),
+    goals: live(raw.goals).map(g => ({ id: g.id, name: g.name, saved: r2(g.start + (saved[g.id] || 0)), target: g.target, monthly: g.monthly })),
+    budgets: Object.fromEntries(cats.map(c => [c.id, c.budget || 0])),
+    paidKeys: live(raw.billPaid).filter(m => m.paid).map(m => m.id)
+  };
+}
+
+type S = View & Pick<Persisted, 'periodType' | 'customLen' | 'customStart' | 'debtStrategy' | 'debtExtra' | 'startedAt'>;
+
+export const catsOf = (s: { cats: Cat[] }): Cat[] => s.cats && s.cats.length ? s.cats : BASE_CATS;
+export const seriesOf = (s: { cats: Cat[] }): Cat[] => catsOf(s).concat(EXTRA_SERIES);
 
 /** Budget period `offset` periods from the current one. `f` scales monthly amounts to the period's length. */
 export function period(s: Pick<S, 'periodType' | 'customLen' | 'customStart'>, offset: number): Period {
@@ -35,12 +62,13 @@ export function monthly(s: S) {
 }
 
 export const incomeMonthly = (s: Pick<S, 'incomes'>) => s.incomes.reduce((a, i) => a + i.amount * FREQ[i.freq].mult, 0);
-export const oneOffIn = (s: Pick<S, 'incomeTxns'>, P: Period) => s.incomeTxns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0);
-export const spentIn = (s: Pick<S, 'txns'>, P: Period) => s.txns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0);
+export const oneOffIn = (s: Pick<S, 'incomeTxns'>, P: Period) => r2(s.incomeTxns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0));
+export const spentIn = (s: Pick<S, 'txns'>, P: Period) => r2(s.txns.reduce((a, t) => a + (t.d >= P.start && t.d <= P.end ? t.amt : 0), 0));
 
+/** Left to spend in a period, exact to the cent (screens round it for display). */
 export function leftFor(s: S, P: Period) {
   const M = monthly(s);
-  return Math.round(incomeMonthly(s) * P.f - (M.bills + M.mins + M.goals) * P.f) + oneOffIn(s, P) - spentIn(s, P);
+  return r2(r2(incomeMonthly(s) * P.f) - r2(M.bills * P.f) - r2(M.mins * P.f) - r2(M.goals * P.f) + oneOffIn(s, P) - spentIn(s, P));
 }
 
 /** Months before the current one count as paid; this month uses the paid list. */

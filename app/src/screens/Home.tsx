@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import { UNCAT } from '../lib/data';
 import { TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
 import { simDebts } from '../lib/debt';
-import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, period, seriesOf } from '../lib/model';
+import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, period, r2, seriesOf } from '../lib/model';
 import { PeriodBar } from '../PeriodBar';
 import { RECENT_PAGE, useApp, useCats } from '../store';
 import { Bar, Dot, H, Seg, rowBorder } from '../ui';
@@ -10,15 +10,16 @@ import { Bar, Dot, H, Seg, rowBorder } from '../ui';
 const card = (radius: number, extra?: CSSProperties): CSSProperties => ({ borderRadius: radius, ...extra });
 
 export function Home() {
-  const { s, set, f, actions } = useApp();
+  const { s, set, f, fx, actions } = useApp();
   const CATS = useCats();
   const M = monthly(s);
   const P = period(s, s.offset), P0 = period(s, 0), isPast = s.offset < 0;
   const inP = (t: { d: number }) => t.d >= P.start && t.d <= P.end;
   const pTx = s.txns.filter(inP).sort((a, b) => b.d - a.d || (b.id > a.id ? 1 : -1));
-  const spent = pTx.reduce((a, t) => a + t.amt, 0);
-  const incomeP = Math.round(incomeMonthly(s) * P.f) + oneOffIn(s, P), billsP = Math.round(M.bills * P.f), minsP = Math.round(M.mins * P.f), goalsP = Math.round(M.goals * P.f);
-  const left = incomeP - billsP - minsP - goalsP - spent;
+  const spent = r2(pTx.reduce((a, t) => a + t.amt, 0));
+  // Exact to the cent: the breakdown shows these with cents, the big number rounds them.
+  const incomeP = r2(r2(incomeMonthly(s) * P.f) + oneOffIn(s, P)), billsP = r2(M.bills * P.f), minsP = r2(M.mins * P.f), goalsP = r2(M.goals * P.f);
+  const left = r2(incomeP - billsP - minsP - goalsP - spent);
   const daysLeft = P.end - TODAY + 1;
 
   let heroLabel = 'Left to spend', heroLabelColor = 'var(--accent-ink)', safeSub: string;
@@ -66,6 +67,7 @@ export function Home() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
       <PeriodBar />
+      <BackupReminder />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
         <div className="card" style={card(38, { flex: '1 1 340px', padding: '26px 24px 22px', display: 'flex', flexDirection: 'column', gap: 6 })}>
@@ -77,10 +79,10 @@ export function Home() {
           </button>
           {s.showBreakdown && (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginTop: 12, paddingTop: 14, borderTop: '1px solid var(--line2)' }}>
-              {[['Money coming in', '+' + f(incomeP)], ['Bills (set aside)', '−' + f(billsP)], ['Debt payments', '−' + f(minsP)], ['Saving for goals', '−' + f(goalsP)], ['Spent', '−' + f(spent)]].map(([l, v]) => (
+              {[['Money coming in', '+' + fx(incomeP)], ['Bills (set aside)', '−' + fx(billsP)], ['Debt payments', '−' + fx(minsP)], ['Saving for goals', '−' + fx(goalsP)], ['Spent', '−' + fx(spent)]].map(([l, v]) => (
                 <div key={l} style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15 }}><span className="muted">{l}</span><span style={{ fontWeight: 600 }}>{v}</span></div>
               ))}
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, paddingTop: 10, borderTop: '1px dashed var(--line2)' }}><span style={{ fontWeight: 600 }}>{heroLabel}</span><span style={{ fontWeight: 700, color: 'var(--accent-ink)' }}>{safeTxt}</span></div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 15, paddingTop: 10, borderTop: '1px dashed var(--line2)' }}><span style={{ fontWeight: 600 }}>{heroLabel}</span><span style={{ fontWeight: 700, color: 'var(--accent-ink)' }}>{fx(Math.abs(isPast ? left : Math.max(0, left)))}</span></div>
             </div>
           )}
         </div>
@@ -130,7 +132,7 @@ export function Home() {
                     <div style={{ fontSize: 16, fontWeight: 600 }}>{t.note || (c ? c.name : 'Extra income')}</div>
                     <div className="muted" style={{ fontSize: 13 }}>{c ? (t.note ? c.name + ' · ' : '') + dayName(t.d) : 'Income · ' + dayName(t.d)}</div>
                   </div>
-                  <div style={{ fontSize: 16, fontWeight: 600, color: c ? 'var(--ink)' : 'var(--accent-ink)' }}>{c ? f(t.amt) : '+' + f(t.amt)}</div>
+                  <div style={{ fontSize: 16, fontWeight: 600, color: c ? 'var(--ink)' : 'var(--accent-ink)' }}>{c ? fx(t.amt) : '+' + fx(t.amt)}</div>
                 </div>
               );
             })}
@@ -149,14 +151,14 @@ export function Home() {
 }
 
 function CategoryList({ pTx, spent, plannedP, budgetP }: { pTx: { id: string; amt: number; cat: string; note: string; d: number }[]; spent: number; plannedP: number; budgetP: (id: string) => number }) {
-  const { s, set, f, actions } = useApp();
+  const { s, set, f, fx, actions } = useApp();
   const CATS = useCats();
   const donut = s.catView === 'donut';
   const parts: string[] = []; let acc = 0;
   const rows = CATS.map(c => {
-    const list = pTx.filter(t => t.cat === c.id), sp = list.reduce((a, t) => a + t.amt, 0), bud = budgetP(c.id);
+    const list = pTx.filter(t => t.cat === c.id), sp = r2(list.reduce((a, t) => a + t.amt, 0)), bud = budgetP(c.id);
     if (sp > 0) { const deg = sp / (spent || 1) * 360; parts.push(c.color + ' ' + acc + 'deg ' + (acc + deg) + 'deg'); acc += deg; }
-    return { c, list, sp, bud, over: sp - bud };
+    return { c, list, sp, bud, over: r2(sp - bud) };
   });
   return (
     <div className="card" style={{ borderRadius: 32, padding: '4px 20px' }}>
@@ -202,7 +204,7 @@ function CategoryList({ pTx, spent, plannedP, budgetP }: { pTx: { id: string; am
                 {list.map(t => (
                   <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 0', borderBottom: '1px solid var(--line)' }}>
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 1 }}><div style={{ fontSize: 15, fontWeight: 600 }}>{t.note || c.name}</div><div className="muted" style={{ fontSize: 13 }}>{dayName(t.d)}</div></div>
-                    <div style={{ fontSize: 15, fontWeight: 600 }}>{f(t.amt)}</div>
+                    <div style={{ fontSize: 15, fontWeight: 600 }}>{fx(t.amt)}</div>
                   </div>
                 ))}
                 {!list.length && <div className="muted" style={{ fontSize: 14, padding: '10px 0' }}>Nothing spent here in this period.</div>}
@@ -294,6 +296,24 @@ function SpendingChart() {
       <div style={{ display: 'flex', gap, marginTop: -8 }}>
         {raw.map((r, i) => <div key={i} className="muted" style={{ flex: 1, minWidth: 0, fontSize: 11, whiteSpace: 'nowrap', overflow: 'visible' }}>{r.label}</div>)}
       </div>
+    </div>
+  );
+}
+
+/** Gentle nudge to download a backup: after two weeks of real use, then every 30 days. "Not now" hides it for a week. */
+function BackupReminder() {
+  const { s, actions } = useApp();
+  const due = s.onboarded && !s.isSample && s.offset === 0 && TODAY - s.startedAt >= 14
+    && (s.lastBackup == null || TODAY - s.lastBackup >= 30) && !(s.backupSnooze != null && TODAY < s.backupSnooze);
+  if (!due) return null;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: 'var(--surface)', border: '2px dashed var(--line3)', borderRadius: 24, padding: '14px 18px' }}>
+      <div style={{ flex: '1 1 260px', display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span style={{ fontSize: 15, fontWeight: 700 }}>{s.lastBackup == null ? 'Back up your budget' : 'Time for a fresh backup'}</span>
+        <span className="muted pretty" style={{ fontSize: 14 }}>Your budget is saved only in this browser. A backup file keeps it safe if the browser’s data gets cleared.</span>
+      </div>
+      <button className="btn-tonal" onClick={actions.downloadBackup}>Download backup</button>
+      <button className="btn-link muted" onClick={actions.snoozeBackup} style={{ padding: '8px 4px', fontSize: 14, color: 'var(--muted)' }}>Not now</button>
     </div>
   );
 }

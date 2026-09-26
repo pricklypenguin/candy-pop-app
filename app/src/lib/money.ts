@@ -19,15 +19,16 @@ export const scaled = (cur: Currency, usd: number) => nice(usd * cur.mag);
 
 export const curOf = (code: string) => CUR.find(c => c.code === code) || CUR[0];
 
-// Cents are hidden by default: whole numbers are calmer to read.
-export const HIDE_CENTS = true;
-
-export function fmtWith(cur: Currency, n: number) {
-  const hide = cur.dec === 0 || HIDE_CENTS;
-  const neg = n < 0; n = Math.abs(n);
-  const s = n.toLocaleString('en-US', { minimumFractionDigits: hide ? 0 : 2, maximumFractionDigits: hide ? 0 : 2 });
+function fmt(cur: Currency, n: number, decimals: number) {
+  // Round first so e.g. −0.4 shows as 0, not −0.
+  const v = Math.round(n * 10 ** decimals) / 10 ** decimals, neg = v < 0;
+  const s = Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
   return (neg ? '−' : '') + (cur.after ? s + ' ' + cur.sym : cur.sym + s);
 }
+/** Rounded to whole units: for headline numbers and totals, which are calmer to read without cents. */
+export const fmtWith = (cur: Currency, n: number) => fmt(cur, n, 0);
+/** Exact, with cents (unless the currency has none): for single transactions, bills and breakdowns. */
+export const fmtExact = (cur: Currency, n: number) => fmt(cur, n, cur.dec);
 
 export const numOnly = (v: string) => v.replace(/[^0-9.]/g, '');
 export const intOnly = (v: string, max = 2) => v.replace(/[^0-9]/g, '').slice(0, max);

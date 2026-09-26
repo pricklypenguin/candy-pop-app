@@ -1,6 +1,7 @@
 import { CUR_M, CUR_Y, monthLabel, spanTxt } from '../lib/dates';
 import { STRATS, simDebts } from '../lib/debt';
 import { monthly } from '../lib/model';
+import { touch } from '../lib/data';
 import { scaled } from '../lib/money';
 import { useApp } from '../store';
 import { Bar, H, RadioDot, Switch } from '../ui';
@@ -134,7 +135,7 @@ export function Debt() {
             <Bar pct={Math.round((1 - d.balance / d.original) * 100)} h={8} />
             <div className="muted" style={{ fontSize: 13 }}>{p ? f(Math.round(p.interest)) + ' interest on this plan' : 'No more interest'}</div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 10, paddingTop: 4, borderTop: '1px solid var(--line)' }}>
-              <button role="switch" aria-checked={inPlan} onClick={() => set(st => ({ debts: st.debts.map(x => x.id === d.id ? { ...x, skip: !x.skip } : x) }))} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: '8px 0', fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>
+              <button role="switch" aria-checked={inPlan} onClick={() => set(st => ({ debts: st.debts.map(x => x.id === d.id ? touch({ ...x, skip: !x.skip }) : x) }))} style={{ display: 'flex', alignItems: 'center', gap: 8, background: 'none', border: 'none', padding: '8px 0', fontSize: 14, fontWeight: 600, color: 'var(--ink)' }}>
                 <Switch on={inPlan} />{inPlan ? 'Roll over when paid off' : 'Back to spending when paid off'}
               </button>
               <button className="btn-tonal" onClick={() => actions.open({ mode: 'debt', id: d.id })}>Log payment</button>

@@ -1,6 +1,6 @@
 import type { CSSProperties, KeyboardEvent, ReactNode } from 'react';
 import { flushSync } from 'react-dom';
-import { DEF_BUD, FREQ, SUG_PCT, PERIOD_OPTS, SUG_BILLS, SUG_DEBTS, SUG_GOALS, type Bill, type Debt, type Freq, type Goal, type ObBill, type ObDebt, type ObGoal, type Onboarding as Ob, type PeriodType } from './lib/data';
+import { DEF_BUD, FREQ, SUG_PCT, PERIOD_OPTS, SUG_BILLS, SUG_DEBTS, SUG_GOALS, remove, touch, uid, type Bill, type Cat, type DebtRec, type Freq, type GoalRec, type Income, type ObBill, type ObDebt, type ObGoal, type Onboarding as Ob, type PeriodType } from './lib/data';
 import { TODAY, fromIso } from './lib/dates';
 import { CUR, curOf, fmtWith, intOnly, numOnly, scaled } from './lib/money';
 import { catsOf } from './lib/model';
@@ -31,9 +31,8 @@ const obAvailM = (o: Ob) => obIncM(o) - obBillsM(o) - obDebtsM(o) - obGoalsM(o);
  * debt payments and savings, keeping a cushion. Without pay: the default plan, in local-currency terms.
  * Rounded to a sensible step for the currency (5 for $/£/€, 1,000 for ¥).
  */
-function obBud(o: Ob, s: State) {
+function obBud(o: Ob, cats: Cat[]) {
   const cur = curOf(o.currency), pf = obPf(o), incM = obIncM(o), step = scaled(cur, 5), out: Record<string, string> = {};
-  const cats = catsOf(s);
   let raw: Record<string, number> = {};
   if (incM > 0) {
     cats.forEach(c => raw[c.id] = incM * (SUG_PCT[c.id] ?? .02) * pf);
@@ -48,7 +47,7 @@ const hero: CSSProperties = { lineHeight: 1.1 };
 const choiceStyle = (on: boolean): CSSProperties => ({ border: '2px solid ' + (on ? 'var(--accent-ink)' : 'var(--surface)'), background: on ? 'var(--accent-softer)' : 'var(--surface)' });
 const surfaceBtn: CSSProperties = { background: 'var(--surface)', border: 'none', borderRadius: 999, padding: '10px 16px', fontSize: 14, fontWeight: 700, color: 'var(--ink)' };
 const obInput: CSSProperties = { border: 'none', background: 'var(--soft)', borderRadius: 12, padding: 12, fontSize: 16, color: 'var(--ink)', outline: 'none', width: '100%', minWidth: 0 };
-const newId = (p: string) => p + Date.now() + Math.floor(Math.random() * 999);
+const newId = () => uid();
 // Focus moves synchronously (new rows are flushed first) so fast typing never lands in the previous field.
 const focusCell = (list: string, row: number, col: number) =>
   (document.querySelector(`[data-cell="${list}-${row}-${col}"]`) as HTMLInputElement | null)?.focus();
@@ -94,7 +93,7 @@ function RowList<R extends { id: string }>({ list, rows, isOk, cols, grid, onCha
 }
 
 export function Onboarding() {
-  const { s, set, toast } = useApp();
+  const { s, raw: saved, set, toast } = useApp();
   const o = s.ob;
   if (!o) return null;
   const web = s.view === 'web';
@@ -109,29 +108,43 @@ export function Onboarding() {
   const per = obPer(o), pf = obPf(o), len = parseInt(o.cLen, 10) || 1;
   const unit = per === 'monthly' ? 'per month' : per === 'weekly' ? 'per week' : per === 'biweekly' ? 'per 2 weeks' : 'per ' + len + ' days';
   const incM = obIncM(o), avail = Math.round(obAvailM(o) * pf);
-  const bud = obBud(o, s), planned = CATS.reduce((a, c) => a + (parseFloat(bud[c.id]) || 0), 0), over = planned > avail;
+  const bud = obBud(o, CATS), planned = CATS.reduce((a, c) => a + (parseFloat(bud[c.id]) || 0), 0), over = planned > avail;
   const incOk = parseFloat(o.incAmt) > 0 && !!o.incNext;
   const customOk = per !== 'custom' || (len >= 1 && len <= 90 && !!o.cStart);
   const ok = o.step === INCOME ? incOk : o.step === PERIOD ? customOk : true;
 
   const finish = () => {
-    const id = Date.now(), amt = parseFloat(o.incAmt), anchor = fromIso(o.incNext);
-    const first = !o.fresh && s.incomes[0];
-    const inc = amt > 0 && anchor != null ? { id: first ? first.id : 'i' + id, name: first ? first.name : 'Paycheck', amount: amt, freq: o.incFreq, anchor } : null;
-    const incomes = o.fresh ? (inc ? [inc] : []) : inc ? [inc, ...s.incomes.slice(1)] : s.incomes;
-    const oldBill = (bid: string) => o.fresh ? undefined : s.bills.find(b => b.id === bid);
-    const bills: Bill[] = o.bills.filter(billOk).map(b => ({ ...oldBill(b.id), id: b.id, name: b.name.trim(), amount: parseFloat(b.amount), day: Math.min(31, parseInt(b.day, 10)), group: /rent|mortgage/i.test(b.name) ? 'rent' as const : undefined, addedOn: oldBill(b.id)?.addedOn ?? TODAY }));
-    // "Run setup again" keeps what isn't edited here (a debt's starting balance, the roll-over switch).
-    const debts: Debt[] = o.debts.filter(debtOk).map(d => {
-      const old = o.fresh ? undefined : s.debts.find(x => x.id === d.id), balance = parseFloat(d.balance);
-      return { ...old, id: d.id, name: d.name.trim(), balance, original: Math.max(old?.original ?? 0, balance), min: parseFloat(d.min), rate: parseFloat(d.rate) || 0 };
-    });
-    const goals: Goal[] = o.goals.filter(goalOk).map(g => ({ id: g.id, name: g.name.trim(), target: parseFloat(g.target), monthly: parseFloat(g.monthly), saved: parseFloat(g.saved) || 0 }));
-    const budgets: Record<string, number> = {}; CATS.forEach(c => budgets[c.id] = (parseFloat(bud[c.id]) || 0) / pf);
-    const patch: Partial<State> = { currency: o.currency, incomes, bills, debts, goals, budgets, periodType: per, onboarded: true, ob: null, tab: 'home', offset: 0, sheet: null };
+    const amt = parseFloat(o.incAmt), anchor = fromIso(o.incNext), fresh = o.fresh;
+    // Payments and deposits already logged, so re-entered balances keep counting them.
+    const paidOn = (id: string) => saved.debtPayments.filter(p => p.debtId === id && !p.del).reduce((a, p) => a + p.amt, 0);
+    const depositedTo = (id: string) => saved.goalDeposits.filter(p => p.goalId === id && !p.del).reduce((a, p) => a + p.amt, 0);
+    /** "Run setup again": update edited records, mark removed ones deleted, add new ones. A fresh setup replaces everything. */
+    const merge = <T extends { id: string; del?: number }>(existing: T[], next: T[]): T[] => {
+      if (fresh) return next;
+      const byId = new Map(next.map(r => [r.id, r]));
+      return [...existing.map(r => r.del ? r : byId.get(r.id) ?? remove(r)), ...next.filter(r => !existing.some(e => e.id === r.id))];
+    };
+    const first = fresh ? undefined : s.incomes[0];
+    const inc: Income | null = amt > 0 && anchor != null ? touch({ ...first, id: first ? first.id : uid(), name: first ? first.name : 'Paycheck', amount: amt, freq: o.incFreq, anchor }) : null;
+    const incomes = fresh ? (inc ? [inc] : []) : inc ? (first ? saved.incomes.map(i => i.id === first.id ? inc : i) : [...saved.incomes, inc]) : saved.incomes;
+    const bills = merge<Bill>(saved.bills, o.bills.filter(billOk).map(b => {
+      const old = fresh ? undefined : saved.bills.find(x => x.id === b.id);
+      return touch({ ...old, id: b.id, name: b.name.trim(), amount: parseFloat(b.amount), day: Math.min(31, parseInt(b.day, 10)), group: /rent|mortgage/i.test(b.name) ? 'rent' as const : undefined, addedOn: old?.addedOn ?? TODAY });
+    }));
+    // "Run setup again" keeps what isn't edited here (a debt's original balance, the roll-over switch).
+    const debts = merge<DebtRec>(saved.debts, o.debts.filter(debtOk).map(d => {
+      const old = fresh ? undefined : saved.debts.find(x => x.id === d.id), balance = parseFloat(d.balance);
+      return touch({ ...old, id: d.id, name: d.name.trim(), opening: balance + (old ? paidOn(d.id) : 0), original: Math.max(old?.original ?? 0, balance), min: parseFloat(d.min), rate: parseFloat(d.rate) || 0 });
+    }));
+    const goals = merge<GoalRec>(saved.goals, o.goals.filter(goalOk).map(g => {
+      const old = fresh ? undefined : saved.goals.find(x => x.id === g.id);
+      return touch({ ...old, id: g.id, name: g.name.trim(), target: parseFloat(g.target), monthly: parseFloat(g.monthly), start: (parseFloat(g.saved) || 0) - (old ? depositedTo(g.id) : 0) });
+    }));
+    const cats = saved.cats.map(c => c.del || bud[c.id] == null ? c : touch({ ...c, budget: (parseFloat(bud[c.id]) || 0) / pf }));
+    const patch: Partial<State> = { currency: o.currency, incomes, bills, debts, goals, cats, periodType: per, onboarded: true, ob: null, tab: 'home', offset: 0, sheet: null };
     if (per === 'custom') { patch.customStart = fromIso(o.cStart) ?? s.customStart; patch.customLen = parseInt(o.cLen, 10); }
     // A fresh setup starts a clean account; "Run setup again" keeps logged spending.
-    if (o.fresh) Object.assign(patch, { txns: [], incomeTxns: [], paidKeys: [], startedAt: TODAY, debtExtra: 0 });
+    if (fresh) Object.assign(patch, { txns: [], incomeTxns: [], billPaid: [], debtPayments: [], goalDeposits: [], startedAt: TODAY, debtExtra: 0, isSample: false });
     set(patch);
     toast('You’re all set', 'Tap Log spending whenever you buy something');
   };
@@ -175,7 +188,7 @@ export function Onboarding() {
   // Adding from a suggestion chip jumps straight to the amount; a blank row starts at the name.
   const addTo = <K extends 'bills' | 'debts' | 'goals'>(k: K, blank: Omit<Ob[K][number], 'id' | 'name'>) => (name: string) => {
     const idx = o[k].length;
-    flushSync(() => setList(k, rows => [...rows, { id: newId(k[0]), name, ...blank }] as Ob[K]));
+    flushSync(() => setList(k, rows => [...rows, { id: newId(), name, ...blank }] as Ob[K]));
     focusCell(k, idx, name ? 1 : 0);
   };
   const addBill = addTo('bills', { amount: '', day: '' });
@@ -340,7 +353,7 @@ export function Onboarding() {
                   <span style={{ flex: 1, fontSize: 16, fontWeight: 600 }}>{c.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'var(--soft)', borderRadius: 16, padding: '0 12px', width: 130 }}>
                     <span className="muted" style={{ fontSize: 15 }}>{sym}</span>
-                    <input aria-label={c.name + ' budget'} value={bud[c.id]} inputMode="decimal" onChange={e => { const v = numOnly(e.target.value); set(x => ({ ob: { ...x.ob!, budRaw: { ...obBud(x.ob!, x), [c.id]: v } } })); }} style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', padding: '12px 0', fontSize: 16, fontWeight: 600, color: 'var(--ink)', outline: 'none', textAlign: 'right' }} />
+                    <input aria-label={c.name + ' budget'} value={bud[c.id]} inputMode="decimal" onChange={e => { const v = numOnly(e.target.value); set(x => ({ ob: { ...x.ob!, budRaw: { ...obBud(x.ob!, CATS), [c.id]: v } } })); }} style={{ flex: 1, minWidth: 0, border: 'none', background: 'transparent', padding: '12px 0', fontSize: 16, fontWeight: 600, color: 'var(--ink)', outline: 'none', textAlign: 'right' }} />
                   </div>
                 </div>
               ))}

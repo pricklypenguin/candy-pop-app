@@ -6,7 +6,7 @@ import { useApp } from '../store';
 import { Bar, H, rowBorder } from '../ui';
 
 export function Bills() {
-  const { s, set, f, actions } = useApp();
+  const { s, f, fx, actions } = useApp();
   const web = s.view === 'web';
 
   const payDays: Record<number, typeof s.incomes> = {};
@@ -33,7 +33,7 @@ export function Bills() {
         <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{o.bill.name}</div>
         <div style={{ fontSize: 13, fontWeight: muted ? undefined : 600, color: muted || dueBeforeAdded(s, o) ? 'var(--muted)' : o.n - TODAY <= 2 ? 'var(--warn-ink)' : 'var(--muted)' }}>{whenTxt(o)}</div>
       </div>
-      <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{f(o.bill.amount)}</div>
+      <div style={{ fontSize: 16, fontWeight: 600, color: muted ? 'var(--muted)' : undefined }}>{fx(o.bill.amount)}</div>
     </div>
   ));
 
@@ -68,8 +68,8 @@ export function Bills() {
               );
               if (web) {
                 const chips = [
-                  ...pays.map(inc => ({ name: 'Payday ' + f(inc.amount), title: inc.name + ' · ' + f(inc.amount), bg: 'var(--pay-bg)', color: 'var(--accent-deep)', paid: false })),
-                  ...os.map(o => { const unknown = dueBeforeAdded(s, o); return { name: o.bill.name, title: o.bill.name + ' · ' + f(o.bill.amount) + (o.paid ? ' · paid' : ''), bg: o.paid || unknown ? 'var(--line2)' : 'var(--due-bg)', color: o.paid || unknown ? 'var(--muted)' : 'var(--due-ink)', paid: o.paid }; })
+                  ...pays.map(inc => ({ name: 'Payday ' + f(inc.amount), title: inc.name + ' · ' + fx(inc.amount), bg: 'var(--pay-bg)', color: 'var(--accent-deep)', paid: false })),
+                  ...os.map(o => { const unknown = dueBeforeAdded(s, o); return { name: o.bill.name, title: o.bill.name + ' · ' + fx(o.bill.amount) + (o.paid ? ' · paid' : ''), bg: o.paid || unknown ? 'var(--line2)' : 'var(--due-bg)', color: o.paid || unknown ? 'var(--muted)' : 'var(--due-ink)', paid: o.paid }; })
                 ];
                 return (
                   <div key={d} style={{ minHeight: cellH, borderRadius: 16, background: 'var(--soft2)', padding: 6, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, minWidth: 0 }}>
@@ -112,8 +112,8 @@ export function Bills() {
                     </div>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 2 }}>
-                    <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--accent-ink)' }}>{f(inc.amount)}</div>
-                    <button className="muted" onClick={() => set(st => ({ incomes: st.incomes.filter(x => x.id !== inc.id) }))} style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, fontWeight: 600 }}>Remove</button>
+                    <div style={{ fontSize: 16, fontWeight: 600, color: 'var(--accent-ink)' }}>{fx(inc.amount)}</div>
+                    <button className="muted" onClick={() => actions.removeIncome(inc.id)} style={{ background: 'none', border: 'none', padding: 0, fontSize: 12, fontWeight: 600 }}>Remove</button>
                   </div>
                 </div>
               );

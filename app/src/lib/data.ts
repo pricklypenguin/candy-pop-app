@@ -5,14 +5,41 @@ export type PeriodType = 'monthly' | 'biweekly' | 'weekly' | 'custom';
 export type Freq = 'weekly' | 'biweekly' | 'monthly';
 export type Strategy = 'snowball' | 'avalanche' | 'min';
 
-export interface Cat { id: string; name: string; color: string }
-export interface Txn { id: string; amt: number; cat: string; note: string; d: number }
-export interface IncomeTxn { id: string; amt: number; note: string; d: number }
-export interface Income { id: string; name: string; amount: number; freq: Freq; anchor: number }
+/**
+ * Every saved record has a globally unique id, `u` (when it last changed, ms) and, once deleted, `del`
+ * (when it was deleted, ms). Deleted records are kept and hidden, so a future sync can tell
+ * "deleted here" apart from "never seen there".
+ */
+export interface Rec { id: string; u?: number; del?: number }
+
+// budget: planned spending per month.
+export interface Cat extends Rec { name: string; color: string; budget?: number }
+export interface Txn extends Rec { amt: number; cat: string; note: string; d: number }
+export interface IncomeTxn extends Rec { amt: number; note: string; d: number }
+export interface Income extends Rec { name: string; amount: number; freq: Freq; anchor: number }
 // addedOn: the day the bill was added. Due dates before it this month are "unknown" rather than overdue.
-export interface Bill { id: string; name: string; amount: number; day: number; group?: 'rent'; addedOn?: number }
+export interface Bill extends Rec { name: string; amount: number; day: number; group?: 'rent'; addedOn?: number }
+/** Whether a bill was paid in a given month (ym = "2026-9"). id is billId + ':' + ym. */
+export interface PaidMark extends Rec { billId: string; ym: string; paid: boolean }
+/** Saved debt. The balance isn't stored: it's `opening` minus the payments logged against it. */
+export interface DebtRec extends Rec { name: string; opening: number; original: number; min: number; rate: number; skip?: boolean }
+export interface DebtPayment extends Rec { debtId: string; amt: number; d: number }
+/** Saved goal. The saved amount isn't stored: it's `start` plus the deposits added to it. */
+export interface GoalRec extends Rec { name: string; start: number; target: number; monthly: number }
+export interface GoalDeposit extends Rec { goalId: string; amt: number; d: number }
+
+// What the screens work with: live (not deleted) records, with balances worked out.
 export interface Debt { id: string; name: string; balance: number; original: number; min: number; rate: number; skip?: boolean }
 export interface Goal { id: string; name: string; saved: number; target: number; monthly: number }
+
+/** A new globally unique id. */
+export const uid = () => (typeof crypto !== 'undefined' && crypto.randomUUID) ? crypto.randomUUID()
+  : Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+/** Mark a record as changed now. */
+export const touch = <T extends Rec>(r: T): T => ({ ...r, u: Date.now() });
+/** Mark a record as deleted now. */
+export const remove = <T extends Rec>(r: T): T => ({ ...r, u: Date.now(), del: Date.now() });
+export const live = <T extends Rec>(xs: T[]) => xs.filter(x => !x.del);
 
 // Category colours are theme tokens so they swap for their softer versions in dark mode.
 export const CAT_PALETTE = [
@@ -81,7 +108,8 @@ export const FORMS: Record<FormKind, { title: string; btn: string; note: string;
 
 // Sample data only: bills whose due day has already passed this month start out as paid.
 const autoPaid = (day: number) => day < CUR_D;
-export const paidKeyOf = (billId: string, y: number, m: number) => billId + ':' + y + '-' + m;
+export const ymOf = (y: number, m: number) => y + '-' + m;
+export const paidKeyOf = (billId: string, y: number, m: number) => billId + ':' + ymOf(y, m);
 export const paidKey = (billId: string) => paidKeyOf(billId, CUR_Y, CUR_M);
 
 // ---------- sample data ----------
@@ -128,30 +156,36 @@ export function seed() {
   return {
     incomes: [{ id: 'i1', name: 'Paycheck', amount: 1477, freq: 'biweekly', anchor: BIWEEK_ANCHOR }] as Income[],
     incomeTxns: [] as IncomeTxn[],
-    budgets: { ...DEF_BUD } as Record<string, number>,
-    bills, paidKeys: bills.filter(b => autoPaid(b.day)).map(b => paidKey(b.id)),
+    bills,
+    billPaid: bills.filter(b => autoPaid(b.day)).map(b => ({ id: paidKey(b.id), billId: b.id, ym: ymOf(CUR_Y, CUR_M), paid: true })) as PaidMark[],
     debts: [
-      { id: 'd1', name: 'Credit card', balance: 2400, original: 3100, min: 75, rate: 22.9 },
-      { id: 'd2', name: 'Car loan', balance: 8200, original: 14000, min: 240, rate: 6.5 },
-      { id: 'd3', name: 'Student loan', balance: 14500, original: 21000, min: 160, rate: 5 }
-    ] as Debt[],
+      { id: 'd1', name: 'Credit card', opening: 2400, original: 3100, min: 75, rate: 22.9 },
+      { id: 'd2', name: 'Car loan', opening: 8200, original: 14000, min: 240, rate: 6.5 },
+      { id: 'd3', name: 'Student loan', opening: 14500, original: 21000, min: 160, rate: 5 }
+    ] as DebtRec[],
+    debtPayments: [] as DebtPayment[],
     goals: [
-      { id: 'g1', name: 'Emergency fund', saved: 1000, target: 3000, monthly: 150 },
-      { id: 'g2', name: 'Summer trip', saved: 420, target: 1200, monthly: 100 },
-      { id: 'g3', name: 'New laptop', saved: 300, target: 900, monthly: 50 }
-    ] as Goal[],
+      { id: 'g1', name: 'Emergency fund', start: 1000, target: 3000, monthly: 150 },
+      { id: 'g2', name: 'Summer trip', start: 420, target: 1200, monthly: 100 },
+      { id: 'g3', name: 'New laptop', start: 300, target: 900, monthly: 50 }
+    ] as GoalRec[],
+    goalDeposits: [] as GoalDeposit[],
     txns: genTxns(),
-    currency: 'USD', onboarded: false, cats: BASE_CATS.slice(),
+    currency: 'USD', onboarded: false, cats: BASE_CATS.map(c => ({ ...c, budget: DEF_BUD[c.id] })) as Cat[],
     periodType: 'monthly' as PeriodType, customStart: TODAY - 5, customLen: 10,
     // First day the budget has data. Charts and period browsing don't go further back than this.
     startedAt: HIST,
+    // True while the sample budget is loaded (no backup reminders for it).
+    isSample: true,
     excluded: ['rent'], chartMode: 'day' as 'day' | 'period', catView: 'bars' as 'bars' | 'donut',
     debtStrategy: 'avalanche' as Strategy, debtExtra: 100, showHowDebt: false
   };
 }
+/** Everything saved: the budget data plus this device's chart/layout preferences. */
 export type Persisted = ReturnType<typeof seed>;
 /** Defaults for lists missing from saved data: empty, never sample data. */
-export const emptyLists = () => ({ incomes: [], incomeTxns: [], bills: [], paidKeys: [], debts: [], goals: [], txns: [] } as Pick<Persisted, 'incomes' | 'incomeTxns' | 'bills' | 'paidKeys' | 'debts' | 'goals' | 'txns'>);
+export const emptyLists = () => ({ incomes: [], incomeTxns: [], bills: [], billPaid: [], debts: [], debtPayments: [], goals: [], goalDeposits: [], txns: [] } as
+  Pick<Persisted, 'incomes' | 'incomeTxns' | 'bills' | 'billPaid' | 'debts' | 'debtPayments' | 'goals' | 'goalDeposits' | 'txns'>);
 
 // ---------- onboarding ----------
 export interface ObBill { id: string; name: string; amount: string; day: string }

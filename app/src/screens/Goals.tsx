@@ -1,3 +1,4 @@
+import { touch, uid } from '../lib/data';
 import { monthLabel } from '../lib/dates';
 import { numOnly, scaled } from '../lib/money';
 import { leftFor, monthly, period } from '../lib/model';
@@ -80,7 +81,7 @@ function GoalPlanner() {
   const save = () => {
     if (!ok) return;
     const name = c.name.trim();
-    set(x => ({ goals: [...x.goals, { id: 'g' + Date.now(), name, target, saved: start, monthly: monthlyAmt }], calc: null }));
+    set(x => ({ goals: [...x.goals, touch({ id: uid(), name, target, start, monthly: monthlyAmt })], calc: null }));
     toast(name + ' added', f(monthlyAmt) + ' a month is now set aside');
   };
 

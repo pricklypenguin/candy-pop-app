@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
-import { FORMS, PERIOD_OPTS, type PeriodType } from './lib/data';
+import { FORMS, PERIOD_OPTS, emptyLists, type Persisted, type PeriodType } from './lib/data';
+import { TODAY, fmtD } from './lib/dates';
 import { CUR, intOnly, numOnly, scaled } from './lib/money';
-import { incomeMonthly, monthly, period, unitOf } from './lib/model';
+import { buildView, incomeMonthly, monthly, period, unitOf } from './lib/model';
 import { BGS, FONTS } from './lib/theme';
 import { useApp, useCats } from './store';
 import { H, RadioCard, Seg, primaryBg, rowBorder } from './ui';
@@ -25,6 +26,7 @@ export function SheetHost() {
   if (sh.mode === 'form') title = sh.editId ? 'Edit ' + ((sh.kind === 'debt' ? s.debts : s.goals).find(x => x.id === sh.editId)?.name || '') : FORMS[sh.kind].title;
   if (sh.mode === 'budget') title = 'Edit budget';
   if (sh.mode === 'settings') title = 'Settings';
+  if (sh.mode === 'restore') title = 'Restore a backup';
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'center', alignItems: web ? 'center' : 'flex-end', padding: web ? 24 : 0 }}>
@@ -39,17 +41,18 @@ export function SheetHost() {
         {sh.mode === 'form' && <FormSheet />}
         {sh.mode === 'budget' && <BudgetSheet />}
         {sh.mode === 'settings' && <SettingsSheet />}
+        {sh.mode === 'restore' && <RestoreSheet />}
       </div>
     </div>
   );
 }
 
 function Keypad() {
-  const { s, set, f, cur, actions } = useApp();
+  const { s, set, fx, cur, actions } = useApp();
   const CATS = useCats();
   const sh = s.sheet!, isSpend = sh.mode === 'spend', income = s.logType === 'income';
   const amt = parseFloat(s.entry) || 0;
-  const label = sh.mode === 'spend' ? (amt ? (income ? 'Add ' + f(amt) + ' income' : 'Log ' + f(amt)) : 'Enter an amount') : sh.mode === 'goal' ? 'Add money' : 'Log payment';
+  const label = sh.mode === 'spend' ? (amt ? (income ? 'Add ' + fx(amt) + ' income' : 'Log ' + fx(amt)) : 'Enter an amount') : sh.mode === 'goal' ? 'Add money' : 'Log payment';
 
   // Physical keyboard support for the number pad.
   useEffect(() => {
@@ -283,6 +286,16 @@ function SettingsSheet() {
       <div className="muted pretty" style={{ fontSize: 14 }}>Your monthly income, bills, debt and savings get split evenly across each period, so the number stays steady.</div>
       <button className="btn-primary" aria-disabled={!lenOk} onClick={actions.saveSettings} style={{ background: primaryBg(lenOk) }}>Save</button>
       <div style={row}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Download a backup</span><span className="muted" style={{ fontSize: 13 }}>Your budget is saved only in this browser. A backup file keeps it safe. {s.lastBackup != null ? 'Last backup: ' + (s.lastBackup === TODAY ? 'today' : fmtD(s.lastBackup)) + '.' : 'No backup yet.'}</span></div>
+        <button className="btn-tonal" onClick={actions.downloadBackup}>Download</button>
+      </div>
+      <div style={row}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Restore from a backup</span><span className="muted" style={{ fontSize: 13 }}>Pick a backup file. You’ll see what’s in it before anything changes.</span></div>
+        <label className="btn-tonal" style={{ cursor: 'pointer' }}>Choose file
+          <input type="file" accept=".json,application/json" style={{ display: 'none' }} onChange={e => { const file = e.target.files?.[0]; e.target.value = ''; if (file) actions.chooseRestore(file); }} />
+        </label>
+      </div>
+      <div style={row}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Run setup again</span><span className="muted" style={{ fontSize: 13 }}>Walk through income, bills, debts, savings and your plan again. Your logged spending stays.</span></div>
         <button className="btn-tonal" onClick={() => set({ sheet: null, ob: actions.obInit() })}>Start</button>
       </div>
@@ -290,6 +303,39 @@ function SettingsSheet() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Reset to test data</span><span className="muted" style={{ fontSize: 13 }}>{s.confirmReset ? 'This replaces everything you’ve entered. Tap again to confirm.' : 'Swap your data for the sample budget.'}</span></div>
         <button onClick={actions.resetTest} style={{ background: s.confirmReset ? 'var(--danger)' : 'var(--danger-soft)', color: s.confirmReset ? 'var(--on)' : 'var(--danger)', border: 'none', borderRadius: 999, padding: '10px 16px', fontSize: 14, fontWeight: 700, flexShrink: 0 }}>{s.confirmReset ? 'Yes, reset' : 'Reset'}</button>
       </div>
+    </div>
+  );
+}
+
+/** Shows what's in a chosen backup file and asks before replacing everything. */
+function RestoreSheet() {
+  const { s, set, actions } = useApp();
+  const r = s.restore;
+  if (!r) return null;
+  if (!r.ok) return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ background: 'var(--danger-soft)', borderRadius: 22, padding: '14px 16px', fontSize: 15 }}>{r.error}</div>
+      <button className="btn-primary" onClick={() => set({ restore: null, sheet: null })} style={{ background: 'var(--accent)' }}>OK</button>
+    </div>
+  );
+  const v = buildView({ ...emptyLists(), cats: [], ...(r.data as Partial<Persisted>) });
+  const when = r.exportedAt ? new Date(r.exportedAt) : null;
+  const n = (k: number, one: string, many = one + 's') => k + ' ' + (k === 1 ? one : many);
+  const lines = [
+    n(v.txns.length, 'transaction'), n(v.bills.length, 'bill'), n(v.incomes.length, 'income source'),
+    n(v.debts.length, 'debt'), n(v.goals.length, 'saving goal'), n(v.cats.length, 'category', 'categories')
+  ];
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+      <div style={{ background: 'var(--soft)', borderRadius: 22, padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        <div style={{ fontSize: 15, fontWeight: 700 }}>Backup{when ? ' from ' + when.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : ''}</div>
+        <div className="muted" style={{ fontSize: 14 }}>{lines.join(' · ')} · currency {String((r.data as { currency?: string }).currency || 'USD')}</div>
+      </div>
+      <div className="pretty" style={{ background: 'var(--danger-soft)', borderRadius: 22, padding: '14px 16px', fontSize: 14 }}>
+        Restoring replaces everything in the app on this device with this backup. If you might want today’s data back, download a backup of it first.
+      </div>
+      <button className="btn-tonal" onClick={actions.downloadBackup} style={{ alignSelf: 'flex-start' }}>Download current data first</button>
+      <button className="btn-primary" onClick={actions.confirmRestore} style={{ background: 'var(--danger)' }}>Replace with this backup</button>
     </div>
   );
 }
