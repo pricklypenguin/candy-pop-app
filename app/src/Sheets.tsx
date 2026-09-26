@@ -5,6 +5,9 @@ import { CUR, intOnly, numOnly, scaled } from './lib/money';
 import { buildView, incomeMonthly, monthly, period, unitOf } from './lib/model';
 import { BGS, FONTS } from './lib/theme';
 import { useApp, useCats } from './store';
+import { ConflictSheet, SyncSheet, syncStatusText } from './SyncUI';
+import { syncAvailable } from './sync/flag';
+import { useSyncStatus } from './sync/useSync';
 import { H, RadioCard, Seg, primaryBg, rowBorder } from './ui';
 
 export function SheetHost() {
@@ -27,6 +30,8 @@ export function SheetHost() {
   if (sh.mode === 'budget') title = 'Edit budget';
   if (sh.mode === 'settings') title = 'Settings';
   if (sh.mode === 'restore') title = 'Restore a backup';
+  if (sh.mode === 'sync') title = 'Sync between devices';
+  if (sh.mode === 'conflicts') title = 'Clashing changes';
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', justifyContent: 'center', alignItems: web ? 'center' : 'flex-end', padding: web ? 24 : 0 }}>
@@ -42,6 +47,8 @@ export function SheetHost() {
         {sh.mode === 'budget' && <BudgetSheet />}
         {sh.mode === 'settings' && <SettingsSheet />}
         {sh.mode === 'restore' && <RestoreSheet />}
+        {sh.mode === 'sync' && <SyncSheet />}
+        {sh.mode === 'conflicts' && <ConflictSheet />}
       </div>
     </div>
   );
@@ -285,6 +292,7 @@ function SettingsSheet() {
       )}
       <div className="muted pretty" style={{ fontSize: 14 }}>Your monthly income, bills, debt and savings get split evenly across each period, so the number stays steady.</div>
       <button className="btn-primary" aria-disabled={!lenOk} onClick={actions.saveSettings} style={{ background: primaryBg(lenOk) }}>Save</button>
+      {syncAvailable && <SyncRow />}
       <div style={row}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}><span style={{ fontSize: 15, fontWeight: 600 }}>Download a backup</span><span className="muted" style={{ fontSize: 13 }}>Your budget is saved only in this browser. A backup file keeps it safe. {s.lastBackup != null ? 'Last backup: ' + (s.lastBackup === TODAY ? 'today' : fmtD(s.lastBackup)) + '.' : 'No backup yet.'}</span></div>
         <button className="btn-tonal" onClick={actions.downloadBackup}>Download</button>
@@ -336,6 +344,22 @@ function RestoreSheet() {
       </div>
       <button className="btn-tonal" onClick={actions.downloadBackup} style={{ alignSelf: 'flex-start' }}>Download current data first</button>
       <button className="btn-primary" onClick={actions.confirmRestore} style={{ background: 'var(--danger)' }}>Replace with this backup</button>
+    </div>
+  );
+}
+
+/** Settings row for sync (only in builds/devices where sync is offered). */
+function SyncRow() {
+  const { actions } = useApp();
+  const st = useSyncStatus();
+  const row = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 12, borderTop: '1px solid var(--line)' } as const;
+  return (
+    <div style={row}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <span style={{ fontSize: 15, fontWeight: 600 }}>Sync between devices <span style={{ fontSize: 11, fontWeight: 800, borderRadius: 999, padding: '2px 7px', background: 'var(--accent-soft)', color: 'var(--accent-ink)', verticalAlign: 'middle' }}>TEST</span></span>
+        <span className="muted" style={{ fontSize: 13 }}>{st.state === 'off' ? 'Keep your budget the same on your phone and computer. End-to-end encrypted.' : syncStatusText(st)}</span>
+      </div>
+      <button className="btn-tonal" onClick={() => actions.open({ mode: 'sync' })}>{st.state === 'off' ? 'Set up' : 'Manage'}</button>
     </div>
   );
 }

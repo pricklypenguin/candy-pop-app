@@ -14,6 +14,7 @@
  */
 import { BASE_CATS } from './data';
 import { HIST, TODAY } from './dates';
+import { sameData } from '../sync/merge';
 
 /** Current data schema. Bump this and add a converter to MIGRATIONS whenever the saved shape changes. */
 export const SCHEMA = 3;
@@ -169,8 +170,36 @@ export function saveData(data: Raw): 'ok' | 'conflict' {
   if (readOnly) return 'ok';
   if (storedRev() !== knownRev) return 'conflict';
   writeStored(toStored(pick(data, DATA_FIELDS)));
+  savedListeners.forEach(fn => fn());
   return 'ok';
 }
+
+// ---------- for sync (works on saved data, whole cents) ----------
+
+const savedListeners = new Set<() => void>();
+/** Be told after each local save (sync uses this to send changes soon). */
+export function onSaved(fn: () => void) { savedListeners.add(fn); return () => { savedListeners.delete(fn); }; }
+
+/** The saved budget data as stored (whole cents), upgraded to the current schema. */
+export function readStored(): Raw | null {
+  try {
+    const env = JSON.parse(read(DATA_KEY) || 'null') as Envelope | null;
+    if (!env || env.schema > SCHEMA) return null;
+    return env.schema < SCHEMA ? migrate(env.schema, env.data) : env.data;
+  } catch { return null; }
+}
+/** Write synced data only if nothing was saved locally since `expected` was read. */
+export function writeStoredIfUnchanged(expected: Raw, next: Raw) {
+  if (readOnly) return false;
+  const now = readStored();
+  if (!now || !sameData(now, expected)) return false;
+  writeStored(pick(next, DATA_FIELDS));
+  return true;
+}
+/** Replace the saved data outright (joining a synced budget). */
+export function replaceStored(next: Raw) { if (!readOnly) writeStored(pick(next, DATA_FIELDS)); }
+/** Saved data (whole cents) → app amounts. */
+export const storedToApp = (d: Raw) => fromStored(d);
 
 export function savePrefs(prefs: Raw) { write(PREFS_KEY, JSON.stringify(pick(prefs, PREF_FIELDS))); }
 

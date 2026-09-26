@@ -27,3 +27,10 @@ Add `?today=2026-09-25` to the URL to pin "today" (the sample data is generated 
 - Every record has a UUID `id`, `u` (last changed, ms) and, when deleted, `del` (deleted records are kept and hidden).
 - Debt balances and goal totals aren't stored: they're an opening/start amount plus separate payment/deposit records.
 - **Changing the saved shape:** bump `SCHEMA` in `storage.ts` and add a converter to `MIGRATIONS`. Never edit a released converter. Old data (and old backup files) are upgraded on load; a copy of the previous version is kept.
+
+## Sync (hidden while testing)
+
+Optional end-to-end-encrypted sync lives in `src/sync/` (encryption, three-way merge, engine) with its
+screens in `src/SyncUI.tsx`; the server is in `../server` (see its README for deploying and settings).
+It's controlled by `VITE_SYNC` (`off` / `labs` / `on`) and `VITE_SYNC_URL` at build time; with `labs`,
+open the app once with `?labs=sync` to show it in that browser. `npm test` runs the merge and crypto tests.

@@ -5,6 +5,8 @@ import { curOf, fmtExact, fmtWith } from './lib/money';
 import { buildView, catsOf, leftFor, nextPayOf, period, type View } from './lib/model';
 import * as storage from './lib/storage';
 import { DATA_FIELDS, PREF_FIELDS, type ParsedBackup } from './lib/storage';
+import * as sync from './sync/engine';
+import { syncAvailable } from './sync/flag';
 import { DEFAULT_BG, DEFAULT_FONT, applyTheme, resolveDark, type ThemePref } from './lib/theme';
 
 export type Sheet =
@@ -14,7 +16,9 @@ export type Sheet =
   | { mode: 'form'; kind: FormKind; editId?: string }
   | { mode: 'budget' }
   | { mode: 'settings' }
-  | { mode: 'restore' };
+  | { mode: 'restore' }
+  | { mode: 'sync' }
+  | { mode: 'conflicts' };
 
 export interface Calc { name: string; target: string; start: string; mode: 'pay' | 'time'; monthly: number; months: number }
 export const CALC_DEFAULT: Calc = { name: '', target: '2000', start: '0', mode: 'pay', monthly: 100, months: 12 };
@@ -101,6 +105,8 @@ function useAppState() {
 
   // Pick up changes saved by the app in another tab.
   useEffect(() => storage.watchOtherTabs(applyExternal), [applyExternal]);
+  // Sync (only when offered in this build/device and turned on): shows synced data as it arrives.
+  useEffect(() => syncAvailable ? sync.init(applyExternal) : undefined, [applyExternal]);
   useEffect(() => { if (initial.notice) toast(...initial.notice); }, []); // eslint-disable-line react-hooks/exhaustive-deps
   // Once there's a real budget, ask the browser to keep it even when space runs low.
   useEffect(() => { if (raw.onboarded && !raw.isSample) storage.requestPersistence(); }, [raw.onboarded, raw.isSample]);

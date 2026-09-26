@@ -4,6 +4,7 @@ import { TODAY, WD, dayName, dt, fmtD, monthLabel } from '../lib/dates';
 import { simDebts } from '../lib/debt';
 import { dueBeforeAdded, firstDay, incomeMonthly, monthly, occurrences, oneOffIn, period, r2, seriesOf } from '../lib/model';
 import { PeriodBar } from '../PeriodBar';
+import { ConflictBanner } from '../SyncUI';
 import { RECENT_PAGE, useApp, useCats } from '../store';
 import { Bar, Dot, H, Seg, rowBorder } from '../ui';
 
@@ -68,6 +69,7 @@ export function Home() {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, paddingTop: 24 }}>
       <PeriodBar />
       <BackupReminder />
+      <ConflictBanner />
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, alignItems: 'stretch' }}>
         <div className="card" style={card(38, { flex: '1 1 340px', padding: '26px 24px 22px', display: 'flex', flexDirection: 'column', gap: 6 })}>
