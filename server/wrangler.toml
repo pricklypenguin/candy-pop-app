@@ -1,0 +1,23 @@
+# Steady sync server (Cloudflare Worker + D1). See README.md for setup.
+name = "steady-sync"
+main = "src/index.ts"
+compatibility_date = "2026-09-01"
+
+# Only these sites may call the API. Replace with your app's address(es), comma-separated.
+[vars]
+ALLOWED_ORIGINS = "http://localhost:5173,http://localhost:4173"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "steady-sync"
+# Paste the id printed by `npx wrangler d1 create steady-sync --jurisdiction eu` here.
+database_id = "00000000-0000-0000-0000-000000000000"
+migrations_dir = "migrations"
+
+# Daily clean-up of idle vaults and expired pairing sessions (03:17 UTC).
+[triggers]
+crons = ["17 3 * * *"]
+
+# Don't keep request logs; the app's data is encrypted but IP addresses are personal data.
+[observability]
+enabled = false
